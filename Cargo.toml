@@ -1,23 +1,25 @@
 [package]
-name = "muta-chain"
-version = "0.1.0"
-authors = ["yejiayu <yejiayu.fe@gmail.com>"]
+name = "huobi-chain"
+version = "0.2.0"
+authors = ["Muta Dev <muta@nervos.org>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 muta = { git = "https://github.com/nervosnetwork/muta", branch = "master" }
 protocol = { git = "https://github.com/nervosnetwork/muta", branch = "master", package = "muta-protocol" }
 
+tokio = { version = "0.2", features = ["macros", "rt-core"]}
 derive_more = "0.15"
 runtime = "0.3.0-alpha.7"
 runtime-tokio = "0.3.0-alpha.6"
 
-asset = { git = "https://github.com/nervosnetwork/muta", branch = "master" }
 metadata = { path = "services/metadata" }
+asset = { path = "services/asset" }
+riscv = { path = "services/riscv" }
 
 [workspace]
 members = [
   "services/metadata",
+  "services/riscv",
+  "services/asset",
 ]

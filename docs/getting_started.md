@@ -15,7 +15,8 @@
     - [运行单节点](#%e8%bf%90%e8%a1%8c%e5%8d%95%e8%8a%82%e7%82%b9)
     - [运行多节点](#%e8%bf%90%e8%a1%8c%e5%a4%9a%e8%8a%82%e7%82%b9)
   - [与链进行交互](#%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
-    - [发交易](#%e5%8f%91%e4%ba%a4%e6%98%93)
+    - [使用 GraphiQL 与链进行交互](#%e4%bd%bf%e7%94%a8-graphiql-%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
+    - [使用 muta-cli 与链进行交互](#%e4%bd%bf%e7%94%a8-muta-cli-%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
   - [配置说明](#%e9%85%8d%e7%bd%ae%e8%af%b4%e6%98%8e)
 
 ## 安装和运行
@@ -121,39 +122,58 @@ OPTIONS:
 
 链默认在 8000 端口暴露了 GraphQL 接口用于用户与链进行交互。
 
+### 使用 GraphiQL 与链进行交互
+
 打开 <http://127.0.0.1:8000/graphiql> 后效果如下图所示：
 
 ![](resources/graphiql.png)
 
-点击右上角 Docs 可以查阅接口文档。更多 GraphQL 用法可以参阅 [官方文档](https://graphql.org/)。
+左边输入 GraphQL 语句，点击中间的执行键，即可在右边看到执行结果。
 
-### 发交易
+点击右边 Docs 可以查阅接口文档。更多 GraphQL 用法可以参阅 [官方文档](https://graphql.org/)。
 
-目前链仅支持原生转账交易。在开发环境可以使用 `sendUnsafeTransferTransaction` 进行转账，示例如下：
+### 使用 muta-cli 与链进行交互
 
-```graphql
-mutation {
-  sendUnsafeTransferTransaction(
-    inputRaw: {
-      chainId: "0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036",
-      feeCycle: "0xff",
-      feeAssetId: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      nonce: "0000000000000000000000000000000000000000000000000000000000000000",
-      timeout: "0x100"
-    },
-    inputAction: {
-      carryingAmount: "0x01",
-      carryingAssetId: "fee0decb4f6a76d402f200b5642a9236ba455c22aa80ef82d69fc70ea5ba20b5",
-      receiver: "100000000000000000000000000000000000000000"
-    },
-    inputPrivkey: "0x45c56be699dca666191ad3446897e0f480da234da896270202514a0e1a587c3f")
-}
+我们通过 [muta-sdk](https://github.com/nervosnetwork/muta-sdk-js) 和 nodejs 封装了一个交互式命令行，可以更方便的与 huobi-chain 进行交互。
+
+```sh
+$ npm install -g muta-cli
+
+$ muta-cli repl
+> await client.getLatestBlockHeight()
+2081
+> await client.getBlock('0x1')
+{ header:
+   { chainId:
+      'b6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036',
+     confirmRoot: [],
+     cyclesUsed: [ '0000000000000000' ],
+     height: '0000000000000001',
+     execHeight: '0000000000000000',
+     orderRoot:
+      '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+     preHash:
+      '87f07b8f60bd6198ba52deacfe9ecf9870198edb60a706a1d0fea1f5df1c6a26',
+     proposer: 'f8389d774afdad8755ef8e629e5a154fddc6325a',
+     receiptRoot: [],
+     stateRoot:
+      'f846a8c0af225b0d3a4ea5c90e2adfbf207b0accd9a1046832f84aa92947d1f1',
+     timestamp: '000000005e3ebfea',
+     validatorVersion: '0000000000000000',
+     proof:
+      { bitmap: '',
+        blockHash:
+         '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421',
+        height: '0000000000000000',
+        round: '0000000000000000',
+        signature: '' },
+     validators: [ [Object] ] },
+  orderedTxHashes: [] }
 ```
 
-手续费扣除逻辑暂未实现，`feeCycle` 和 `feeAssetId` 可以随意填写。
-
-如想测试转账交易，可以使用创世块中预先分配了原生资产的账号，参考 [此处](../devtools/chain/README.md)。
-
+该 REPL 是基于 nodejs 的封装，你可以使用任何符合 nodejs 语法的语句。
+环境中默认注入了 muta-sdk 库，即 `muta_sdk` 变量。
+更多交互接口，可以参考 [muta-sdk 文档](https://nervosnetwork.github.io/muta-sdk-js/)。
 
 ## 配置说明
 
