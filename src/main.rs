@@ -40,8 +40,7 @@ impl ServiceMapping for DefaultServiceMapping {
 
 #[tokio::main]
 async fn main() {
-    let config_path =
-        std::env::var("CONFIG").unwrap_or_else(|_| "config/chain.toml".to_owned());
+    let config_path = std::env::var("CONFIG").unwrap_or_else(|_| "config/chain.toml".to_owned());
     let genesis_path =
         std::env::var("GENESIS").unwrap_or_else(|_| "config/genesis.toml".to_owned());
 

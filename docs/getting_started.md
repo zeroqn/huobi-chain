@@ -172,8 +172,13 @@ $ muta-cli repl
 ```
 
 该 REPL 是基于 nodejs 的封装，你可以使用任何符合 nodejs 语法的语句。
-环境中默认注入了 muta-sdk 库，即 `muta_sdk` 变量。
-更多交互接口，可以参考 [muta-sdk 文档](https://nervosnetwork.github.io/muta-sdk-js/)。
+
+环境中默认注入了一些变量，方便使用：
+- `muta_sdk`: 即 muta-sdk 库，更多使用方法可以参考 [muta-sdk 文档](https://nervosnetwork.github.io/muta-sdk-js/)
+- `muta`: muta 链的 instance
+- `client`: 对链进行 GraphQL 调用的 client
+- `wallet`: 根据助记词（默认为随机生成）推导出的钱包
+- `accounts`: 根据 wallet 推导出的 20 个账号
 
 ## 配置说明
 
