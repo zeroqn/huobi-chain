@@ -14,8 +14,10 @@ use protocol::types::{
 };
 use protocol::{types::Bytes, ProtocolResult};
 
-use crate::types::{SetAdminPayload, UpdateMetadataPayload};
-use crate::{MetadataService, ADMIN_KEY};
+use crate::types::UpdateMetadataPayload;
+use crate::MetadataService;
+
+const ADMISSION_TOKEN: Bytes = Bytes::from_static(b"node_manager");
 
 #[test]
 fn test_get_metadata() {
@@ -25,7 +27,7 @@ fn test_get_metadata() {
 
     let init_metadata = mock_metadata_1();
 
-    let service = new_metadata_service(init_metadata.clone(), caller);
+    let service = new_metadata_service(init_metadata.clone());
     let metadata = service.get_metadata(context).unwrap();
 
     assert_eq!(metadata, init_metadata);
@@ -38,7 +40,7 @@ fn test_update_metadata() {
     let context = mock_context(cycles_limit, caller.clone());
 
     let init_metadata = mock_metadata_1();
-    let mut service = new_metadata_service(init_metadata.clone(), caller);
+    let mut service = new_metadata_service(init_metadata.clone());
 
     let metadata = service.get_metadata(context.clone()).unwrap();
     assert_eq!(metadata, init_metadata);
@@ -58,32 +60,8 @@ fn test_update_metadata() {
     assert_eq!(metadata, update_metadata);
 }
 
-#[test]
-fn test_set_admin() {
-    let admin_1: Address = Address::from_hex("0x755cdba6ae4f479f7164792b318b2a06c759833b").unwrap();
-    let admin_2: Address = Address::from_hex("f8389d774afdad8755ef8e629e5a154fddc6325a").unwrap();
-
-    let cycles_limit = 1024 * 1024 * 1024; // 1073741824
-    let context = mock_context(cycles_limit, admin_1.clone());
-
-    let init_metadata = mock_metadata_1();
-
-    let mut service = new_metadata_service(init_metadata, admin_1.clone());
-    let old_admin = service.get_admin(context.clone()).unwrap();
-    assert_eq!(old_admin, admin_1);
-
-    service
-        .set_admin(context.clone(), SetAdminPayload {
-            admin: admin_2.clone(),
-        })
-        .unwrap();
-    let new_admin = service.get_admin(context).unwrap();
-    assert_eq!(new_admin, admin_2);
-}
-
 fn new_metadata_service(
     metadata: Metadata,
-    admin: Address,
 ) -> MetadataService<
     DefalutServiceSDK<
         GeneralServiceState<MemoryDB>,
@@ -102,7 +80,6 @@ fn new_metadata_service(
     );
 
     sdk.set_value(METADATA_KEY.to_string(), metadata).unwrap();
-    sdk.set_value(ADMIN_KEY.to_string(), admin).unwrap();
 
     MetadataService::new(sdk).unwrap()
 }
@@ -168,7 +145,7 @@ fn mock_context(cycles_limit: u64, caller: Address) -> ServiceContext {
         service_name: "service_name".to_owned(),
         service_method: "service_method".to_owned(),
         service_payload: "service_payload".to_owned(),
-        extra: None,
+        extra: Some(ADMISSION_TOKEN.clone()),
         events: Rc::new(RefCell::new(vec![])),
     };
 
