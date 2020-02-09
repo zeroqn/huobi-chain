@@ -40,9 +40,21 @@ impl ServiceMapping for DefaultServiceMapping {
 
 #[tokio::main]
 async fn main() {
-    let config_path = std::env::var("CONFIG").unwrap_or_else(|_| "config/chain.toml".to_owned());
-    let genesis_path =
-        std::env::var("GENESIS").unwrap_or_else(|_| "config/genesis.toml".to_owned());
+    let matches = clap::App::new("Huobi-chain")
+        .version("v0.2.0")
+        .author("Muta Dev <muta@nervos.org>")
+        .arg(
+            clap::Arg::from_usage("-c --config=[FILE] 'a required file for the configuration'")
+                .default_value("./config/chain.toml"),
+        )
+        .arg(
+            clap::Arg::from_usage("-g --genesis=[FILE] 'a required file for the genesis'")
+                .default_value("./config/genesis.toml"),
+        )
+        .get_matches();
+
+    let config_path = matches.value_of("config").unwrap();
+    let genesis_path = matches.value_of("genesis").unwrap();
 
     let builder = MutaBuilder::new();
 

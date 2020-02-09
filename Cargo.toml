@@ -12,6 +12,7 @@ tokio = { version = "0.2", features = ["macros", "rt-core"]}
 derive_more = "0.15"
 runtime = "0.3.0-alpha.7"
 runtime-tokio = "0.3.0-alpha.6"
+clap = "2.33"
 
 metadata = { path = "services/metadata" }
 asset = { path = "services/asset" }

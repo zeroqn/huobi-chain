@@ -1380,6 +1380,7 @@ name = "huobi-chain"
 version = "0.2.0"
 dependencies = [
  "asset 0.1.0-alpha.0",
+ "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "derive_more 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "metadata 0.1.0-alpha.0",
  "muta 0.1.0-alpha.0 (git+https://github.com/nervosnetwork/muta)",

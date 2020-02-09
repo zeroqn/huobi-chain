@@ -13,11 +13,10 @@
       - [安装 rust](#%e5%ae%89%e8%a3%85-rust)
       - [编译](#%e7%bc%96%e8%af%91)
     - [运行单节点](#%e8%bf%90%e8%a1%8c%e5%8d%95%e8%8a%82%e7%82%b9)
-    - [运行多节点](#%e8%bf%90%e8%a1%8c%e5%a4%9a%e8%8a%82%e7%82%b9)
   - [与链进行交互](#%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
     - [使用 GraphiQL 与链进行交互](#%e4%bd%bf%e7%94%a8-graphiql-%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
     - [使用 muta-cli 与链进行交互](#%e4%bd%bf%e7%94%a8-muta-cli-%e4%b8%8e%e9%93%be%e8%bf%9b%e8%a1%8c%e4%ba%a4%e4%ba%92)
-  - [配置说明](#%e9%85%8d%e7%bd%ae%e8%af%b4%e6%98%8e)
+  - [使用示例](#%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b)
 
 ## 安装和运行
 
@@ -111,13 +110,6 @@ OPTIONS:
     -g, --genesis <FILE>    a required file for the genesis json [default: ./devtools/chain/genesis.json]
 ```
 
-### 运行多节点
-
-1. 根据节点拓扑，修改配置文件 config.toml，主要注意其中的 privkey、network 和 verifier_list 部分，可以参考下面的 docker-compose 配置，或者详细阅读下文的配置说明；
-2. 将 huobi-chain binary 文件、huobi-chain 配置 config.toml 和创世块文件 genesis.json 分发到待部署的节点机器；
-3. 启动 bootstrap 节点；
-4. 启动其它节点；
-
 ## 与链进行交互
 
 链默认在 8000 端口暴露了 GraphQL 接口用于用户与链进行交互。
@@ -180,71 +172,14 @@ $ muta-cli repl
 - `wallet`: 根据助记词（默认为随机生成）推导出的钱包
 - `accounts`: 根据 wallet 推导出的 20 个账号
 
-## 配置说明
 
-默认的配置样例在 `./devtools/chain/config.toml`，此处对其中的一些字段进行说明。
+## 使用示例
 
-```toml
-# chain id，链的唯一标识，同一个链的所有节点该项配置必须相同
-chain_id = "b6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036"  # by sha256(Huobi-chain)
+以下使用 muta-cli 对链的常用操作进行简单的示例说明：
 
-# 节点私钥，节点的唯一标识，在作为 bootstraps 节点时，需要给出地址和该私钥对应的公钥让其他节点连接；如果是出块节点，该私钥对应的地址需要在 consensus verifier_list 中
-privkey = "45c56be699dca666191ad3446897e0f480da234da896270202514a0e1a587c3f"
+```sh
+$ muta-cli repl
+> await client.getLatestBlockHeight()
+2081
 
-# db config，链数据所在目录
-data_path = "./devtools/chain/data"
-
-[graphql]
-# graphql 监听地址
-listening_address = "0.0.0.0:8000"
-# graphql 访问路径
-graphql_uri = "/graphql"
-# graphiql 路径
-graphiql_uri = "/graphiql"
-
-[network]
-# p2p 监听地址
-listening_address = "0.0.0.0:1337"
-
-[[network.bootstraps]]
-# 初始启动时访问的节点信息
-pubkey = "031288a6788678c25952eba8693b2f278f66e2187004b64ac09416d07f83f96d5b"
-address = "0.0.0.0:1888"
-
-# 交易池相关配置
-[mempool]
-# 最大超时间隔，如果 当前区块数 + timeout_gap > tx 中的 timeout 字段，则交易池会拒绝接收该交易
-timeout_gap = 20
-# 交易池大小
-pool_size = 20000
-# 为了增加性能，每积累到这么多个交易才对外广播一次
-broadcast_txs_size = 200
-# 交易池广播交易间隔，单位为 毫秒(ms)
-broadcast_txs_interval = 200
-
-[consensus]
-# 最大 cycles 限制
-cycles_limit = 99999999
-# cycle 价格
-cycles_price = 1
-# 出块间隔，单位为 毫秒(ms)
-interval = 3000
-# 出块节点的地址合集
-verifier_list = [ "10f8389d774afdad8755ef8e629e5a154fddc6325a" ]
-
-# 共识相关配置
-[consensus.duration]
-# 下面两项标识 propose 阶段的超时时间占共识间隔的比例的分子和分母。
-# 按照上述配置为 3000ms，则 propose 共识阶段的超时时间为 3000ms * 24 / 30 = 2400ms。
-# 下面类似的有 prevote 和 precommit 阶段的超时设置。
-propose_numerator = 24
-propose_denominator = 30
-prevote_numerator = 6
-prevote_denominator = 30
-precommit_numerator = 6
-precommit_denominator = 30
-
-[executor]
-# 设为 true 时，节点将只保存最新高度的 state
-light = false
 ```
