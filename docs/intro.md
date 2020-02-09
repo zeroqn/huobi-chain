@@ -43,9 +43,9 @@
 
 我们采用去中心化 relay 的方式传递跨链证明，relayer 可以是侧链 validator，也可以是其他第三方用户。侧链之间可以不依赖火币公链或 Nervos CKB 实现直接的跨链功能。
 
-#### 可灵活定制的 service 
+#### 可灵活定制的 service
 
-Service 是 Muta 框架中用于扩展的抽象层，用户可以基于 Service 定义区块治理、添加 VM、或实现一个 dapp。当前火币公链测试链基于 Muta 框架内置了三个 build in service： asset service，risc-v service，node management service。未来火币公链的侧链可能广泛采用 service 来实现高性能的特定业务。
+Service 是 Muta 框架中用于扩展的抽象层，用户可以基于 Service 定义区块治理、添加 VM、或实现一个 dapp。当前火币公链测试链基于 Muta 框架内置了四个 build in service： asset service，risc-v service， metadata service ， node manager service。未来火币公链的侧链可能广泛采用 service 来实现高性能的特定业务。
 
 #### 应用开发
 
