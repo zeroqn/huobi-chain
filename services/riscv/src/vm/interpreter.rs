@@ -93,8 +93,8 @@ impl Interpreter {
                     ckb_vm::DefaultCoreMachine<u64, ckb_vm::SparseMemory<u64>>,
                 >::new(core_machine)
                 .instruction_cycle_func(Box::new(vm::cost_model::instruction_cycles))
-                .syscall(Box::new(vm::SyscallDebug::new("[ckb-vm debug]")))
-                .syscall(Box::new(vm::SyscallAssert::new("[ckb-vm assert]")))
+                .syscall(Box::new(vm::SyscallDebug))
+                .syscall(Box::new(vm::SyscallAssert))
                 .syscall(Box::new(vm::SyscallEnvironment::new(
                     self.context.clone(),
                     self.iparams.clone(),
@@ -116,8 +116,8 @@ impl Interpreter {
                 let core_machine = AsmCoreMachine::new_with_max_cycles(cycles_lmit);
                 let machine = DefaultMachineBuilder::<Box<AsmCoreMachine>>::new(core_machine)
                     .instruction_cycle_func(Box::new(vm::cost_model::instruction_cycles))
-                    .syscall(Box::new(vm::SyscallDebug::new("[ckb-vm debug]")))
-                    .syscall(Box::new(vm::SyscallAssert::new("[ckb-vm assert]")))
+                    .syscall(Box::new(vm::SyscallDebug))
+                    .syscall(Box::new(vm::SyscallAssert))
                     .syscall(Box::new(vm::SyscallEnvironment::new(
                         self.context.clone(),
                         self.iparams.clone(),
