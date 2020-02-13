@@ -1,24 +1,21 @@
 //! Provedis a debug function, let the contract print information to standard
 //! output.
-use std::io::Write;
-
 use ckb_vm::instructions::Register;
 
 use crate::vm::syscall::common::get_str;
 use crate::vm::syscall::convention::SYSCODE_DEBUG;
 
-pub struct SyscallDebug<T> {
+pub struct SyscallDebug {
     prefix: &'static str,
-    output: T,
 }
 
-impl<T: Write> SyscallDebug<T> {
-    pub fn new(prefix: &'static str, output: T) -> Self {
-        Self { prefix, output }
+impl SyscallDebug {
+    pub fn new(prefix: &'static str) -> Self {
+        Self { prefix }
     }
 }
 
-impl<Mac: ckb_vm::SupportMachine, T: Write> ckb_vm::Syscalls<Mac> for SyscallDebug<T> {
+impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallDebug {
     fn initialize(&mut self, _machine: &mut Mac) -> Result<(), ckb_vm::Error> {
         Ok(())
     }
@@ -35,8 +32,7 @@ impl<Mac: ckb_vm::SupportMachine, T: Write> ckb_vm::Syscalls<Mac> for SyscallDeb
         }
 
         let msg = get_str(machine, ptr)?;
-        self.output
-            .write_fmt(format_args!("{} [{}]\n", self.prefix, msg))?;
+        log::debug!("{} [{}]", self.prefix, msg);
 
         Ok(true)
     }
