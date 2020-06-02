@@ -86,8 +86,8 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             .get_value(&FEE_ASSET_KEY.to_owned())
             .expect("fee account should not be empty");
 
-        self._transfer(&caller, &fee_acct, asset_id, value)
-            .expect("fee not enough")
+        // FIXME: Refactor hook api
+        let _ = self._transfer(&caller, &fee_acct, asset_id, value);
     }
 
     #[cycles(100_00)]
