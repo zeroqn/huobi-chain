@@ -2086,6 +2086,7 @@ name = "metadata"
 version = "0.3.0"
 dependencies = [
  "async-trait",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.4",
  "cita_trie",
