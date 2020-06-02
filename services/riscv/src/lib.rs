@@ -75,13 +75,11 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         payload: ExecPayload,
         is_init: bool,
     ) -> ServiceResponse<String> {
-        let sdk = self.sdk.borrow();
-
-        let contract = match sdk.get_value::<_, Contract>(&payload.address) {
+        let contract = match self.sdk.borrow().get_value::<_, Contract>(&payload.address) {
             Some(c) => c,
             None => return ServiceError::ContractNotExists(payload.address.as_hex()).into(),
         };
-        let code = match sdk.get_value::<_, Bytes>(&contract.code_hash) {
+        let code = match self.sdk.borrow().get_value::<_, Bytes>(&contract.code_hash) {
             Some(c) => c,
             None => return ServiceError::CodeNotFound.into(),
         };
@@ -203,9 +201,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
         // Every bytes cost 10 cycles
         sub_cycles!(ctx, code_len * 10);
-
-        let mut sdk = self.sdk.borrow_mut();
-        sdk.set_value(code_hash.clone(), code);
+        self.sdk.borrow_mut().set_value(code_hash.clone(), code);
 
         // Generate contract address
         let tx_hash = match ctx.get_tx_hash() {
@@ -220,7 +216,9 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
         let intp_type = payload.intp_type;
         let contract = Contract::new(code_hash, intp_type);
-        sdk.set_value(contract_address.clone(), contract);
+        self.sdk
+            .borrow_mut()
+            .set_value(contract_address.clone(), contract);
 
         if payload.init_args.is_empty() {
             return ServiceResponse::from_succeed(DeployResp {
@@ -254,8 +252,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     ) -> ServiceResponse<GetContractResp> {
         sub_cycles!(ctx, 21000);
 
-        let sdk = self.sdk.borrow();
-        let contract = match sdk.get_value::<_, Contract>(&payload.address) {
+        let contract = match self.sdk.borrow().get_value::<_, Contract>(&payload.address) {
             Some(c) => c,
             None => return ServiceError::ContractNotExists(payload.address.as_hex()).into(),
         };
@@ -267,7 +264,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         };
 
         if payload.get_code {
-            let code = match sdk.get_value::<_, Bytes>(&contract.code_hash) {
+            let code = match self.sdk.borrow().get_value::<_, Bytes>(&contract.code_hash) {
                 Some(c) => c,
                 None => return ServiceError::CodeNotFound.into(),
             };
@@ -286,7 +283,11 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
             let addr_bytes = payload.address.as_bytes();
             let contract_key = combine_key(addr_bytes.as_ref(), &decoded_key);
 
-            let value = sdk.get_value::<_, Bytes>(&contract_key).unwrap_or_default();
+            let value = self
+                .sdk
+                .borrow()
+                .get_value::<_, Bytes>(&contract_key)
+                .unwrap_or_default();
             sub_cycles!(ctx, value.len() as u64);
 
             resp.storage_values.push(hex::encode(value));
@@ -356,18 +357,7 @@ where
             Err(err) => return ServiceError::Serde(err).into(),
         };
 
-        let resp = self.service_call("riscv", "exec", &payload_json, current_cycle, false);
-        if resp.is_error() {
-            return ServiceResponse::from_error(resp.code, resp.error_message);
-        }
-
-        let (json_ret, cycle) = resp.succeed_data;
-        let raw_ret = match serde_json::from_str(&json_ret) {
-            Ok(r) => r,
-            Err(err) => return ServiceError::Serde(err).into(),
-        };
-
-        ServiceResponse::from_succeed((raw_ret, cycle))
+        self.service_call("riscv", "exec", &payload_json, current_cycle, false)
     }
 
     fn service_call(
