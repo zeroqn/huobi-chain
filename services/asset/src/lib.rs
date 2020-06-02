@@ -2,6 +2,8 @@
 mod tests;
 pub mod types;
 
+use std::ops::{Deref, DerefMut};
+
 use bytes::Bytes;
 use derive_more::Display;
 use serde::Serialize;
@@ -26,6 +28,20 @@ pub struct AssetService<SDK> {
     fee:    Box<dyn StoreUint64>,
 }
 
+impl<SDK: ServiceSDK> Deref for AssetService<SDK> {
+    type Target = SDK;
+
+    fn deref(&self) -> &Self::Target {
+        &self.sdk
+    }
+}
+
+impl<SDK: ServiceSDK> DerefMut for AssetService<SDK> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.sdk
+    }
+}
+
 #[service]
 impl<SDK: ServiceSDK> AssetService<SDK> {
     pub fn new(mut sdk: SDK) -> Self {
@@ -47,32 +63,30 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         };
         self.assets.insert(asset.id.clone(), asset.clone());
 
-        self.sdk
-            .set_value(NATIVE_ASSET_KEY.to_owned(), payload.id.clone());
-        self.sdk.set_value(FEE_ASSET_KEY.to_owned(), payload.id);
-        self.sdk
-            .set_value(FEE_ACCOUNT_KEY.to_owned(), payload.fee_account);
+        self.set_value(NATIVE_ASSET_KEY.to_owned(), payload.id.clone());
+        self.set_value(FEE_ASSET_KEY.to_owned(), payload.id);
+        self.set_value(FEE_ACCOUNT_KEY.to_owned(), payload.fee_account);
         self.fee.set(payload.fee);
-        self.sdk
-            .set_account_value(&asset.issuer, asset.id, AssetBalance::new(payload.supply))
+        self.set_account_value(&asset.issuer, asset.id, AssetBalance::new(payload.supply))
     }
 
     #[tx_hook_before]
     fn tx_hook_before_(&mut self, ctx: ServiceContext) {
         let caller = ctx.get_caller();
-        let asset_id: Hash = self
-            .sdk
-            .get_value(&FEE_ASSET_KEY.to_owned())
-            .expect("fee asset should not be empty");
+
         let fee_acct: Address = self
-            .sdk
             .get_value(&FEE_ACCOUNT_KEY.to_owned())
-            .expect("fee account should not be empty");
-        let value = self.fee.get();
+            .expect("fee asset should not be empty");
         if caller == fee_acct {
             return;
         }
-        self._transfer(&caller, &fee_acct, asset_id.clone(), value)
+
+        let value = self.fee.get();
+        let asset_id: Hash = self
+            .get_value(&FEE_ASSET_KEY.to_owned())
+            .expect("fee account should not be empty");
+
+        self._transfer(&caller, &fee_acct, asset_id, value)
             .expect("fee not enough")
     }
 
@@ -80,7 +94,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[read]
     fn get_native_asset(&self, ctx: ServiceContext) -> ServiceResponse<Asset> {
         let asset_id: Hash = self
-            .sdk
             .get_value(&NATIVE_ASSET_KEY.to_owned())
             .expect("native asset id should not be empty");
 
@@ -111,7 +124,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
 
         let asset_balance = self.asset_balance(&payload.user, &payload.asset_id);
-
         let balance_resp = GetBalanceResponse {
             asset_id: payload.asset_id,
             user:     payload.user,
@@ -134,7 +146,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
 
         let asset_balance = self.asset_balance(&payload.grantor, &payload.asset_id);
         let allowance_value = *asset_balance.allowance.get(&payload.grantee).unwrap_or(&0);
-
         let resp = GetAllowanceResponse {
             asset_id: payload.asset_id,
             grantor:  payload.grantor,
@@ -172,7 +183,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             issuer:    caller,
         };
         self.assets.insert(asset_id, asset.clone());
-        self.sdk.set_account_value(
+        self.set_account_value(
             &asset.issuer,
             asset.id.clone(),
             AssetBalance::new(payload.supply),
@@ -190,24 +201,20 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             Err(err) => return err.into(),
         };
 
-        let TransferPayload {
-            asset_id,
-            value,
-            to,
-        } = payload;
+        let asset_id = payload.asset_id;
         if !self.assets.contains(&asset_id) {
             return ServiceError::AssetNotFound(asset_id).into();
         }
 
-        if let Err(err) = self._transfer(&sender, &to, asset_id.clone(), value) {
+        if let Err(err) = self._transfer(&sender, &payload.to, asset_id.clone(), payload.value) {
             return err.into();
         }
 
         let event = TransferEvent {
             asset_id,
             from: sender,
-            to,
-            value,
+            to: payload.to,
+            value: payload.value,
         };
         Self::emit_event(&ctx, event)
     }
@@ -216,33 +223,28 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[write]
     fn approve(&mut self, ctx: ServiceContext, payload: ApprovePayload) -> ServiceResponse<()> {
         let caller = ctx.get_caller();
-        let ApprovePayload {
-            asset_id,
-            value,
-            to,
-        } = payload;
-        if caller == to {
+        if caller == payload.to {
             return ServiceError::ApproveToSelf.into();
         }
-        if !self.assets.contains(&asset_id) {
-            return ServiceError::AssetNotFound(asset_id).into();
+
+        let asset_id = &payload.asset_id;
+        if !self.assets.contains(asset_id) {
+            return ServiceError::AssetNotFound(payload.asset_id).into();
         }
 
         let mut caller_asset_balance = self.asset_balance(&caller, &asset_id);
         caller_asset_balance
             .allowance
-            .entry(to.clone())
-            .and_modify(|e| *e = value)
-            .or_insert(value);
-
-        self.sdk
-            .set_account_value(&caller, asset_id.clone(), caller_asset_balance);
+            .entry(payload.to.clone())
+            .and_modify(|e| *e = payload.value)
+            .or_insert(payload.value);
+        self.set_account_value(&caller, asset_id.to_owned(), caller_asset_balance);
 
         let event = ApproveEvent {
-            asset_id,
-            grantor: caller,
-            grantee: to,
-            value,
+            asset_id: payload.asset_id,
+            grantor:  caller,
+            grantee:  payload.to,
+            value:    payload.value,
         };
         Self::emit_event(&ctx, event)
     }
@@ -259,45 +261,44 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             Err(err) => return err.into(),
         };
 
-        let TransferFromPayload {
-            sender,
-            recipient,
-            asset_id,
-            value,
-        } = payload;
+        let asset_id = &payload.asset_id;
         if !self.assets.contains(&asset_id) {
-            return ServiceError::AssetNotFound(asset_id).into();
+            return ServiceError::AssetNotFound(payload.asset_id).into();
         }
 
-        let mut asset_balance = self.asset_balance(&sender, &asset_id);
+        let mut asset_balance = self.asset_balance(&payload.sender, &asset_id);
         let allowance_balance = *asset_balance.allowance.entry(caller.clone()).or_insert(0);
-        if allowance_balance < value {
+        if allowance_balance < payload.value {
             return ServiceError::LackOfBalance {
-                expect: value,
+                expect: payload.value,
                 real:   allowance_balance,
             }
             .into();
         }
 
-        let after_allowance_balance = allowance_balance - value;
+        let after_allowance_balance = allowance_balance - payload.value;
         asset_balance
             .allowance
             .entry(caller.clone())
             .and_modify(|e| *e = after_allowance_balance)
             .or_insert(after_allowance_balance);
-        self.sdk
-            .set_account_value(&sender, asset_id.clone(), asset_balance);
+        self.set_account_value(&payload.sender, asset_id.to_owned(), asset_balance);
 
-        if let Err(err) = self._transfer(&sender, &recipient, asset_id.clone(), value) {
+        if let Err(err) = self._transfer(
+            &payload.sender,
+            &payload.recipient,
+            asset_id.to_owned(),
+            payload.value,
+        ) {
             return err.into();
         }
 
         let event = TransferFromEvent {
-            asset_id,
+            asset_id: payload.asset_id,
             caller,
-            sender,
-            recipient,
-            value,
+            sender: payload.sender,
+            recipient: payload.recipient,
+            value: payload.value,
         };
         Self::emit_event(&ctx, event)
     }
@@ -323,7 +324,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
 
         let mut to_asset_balance: AssetBalance = self
-            .sdk
             .get_account_value(recipient, &asset_id)
             .unwrap_or_default();
 
@@ -333,8 +333,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
         to_asset_balance.value = v;
 
-        self.sdk
-            .set_account_value(recipient, asset_id.clone(), to_asset_balance);
+        self.set_account_value(recipient, asset_id.clone(), to_asset_balance);
 
         let (v, overflow) = sender_balance.overflowing_sub(value);
         if overflow {
@@ -342,15 +341,13 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
 
         sender_asset_balance.value = v;
-        self.sdk
-            .set_account_value(sender, asset_id, sender_asset_balance);
+        self.set_account_value(sender, asset_id, sender_asset_balance);
 
         Ok(())
     }
 
     fn asset_balance(&self, account: &Address, asset_id: &Hash) -> AssetBalance {
-        self.sdk
-            .get_account_value(account, asset_id)
+        self.get_account_value(account, asset_id)
             .unwrap_or_default()
     }
 
