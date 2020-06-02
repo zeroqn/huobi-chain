@@ -3106,6 +3106,7 @@ name = "riscv"
 version = "0.3.0"
 dependencies = [
  "async-trait",
+ "binding-macro",
  "byteorder",
  "cita_trie",
  "ckb-vm",
