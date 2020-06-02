@@ -2,12 +2,13 @@ import {
   muta,
   CHAIN_CONFIG,
   delay,
-  client,
+  mutaClient as client,
   accounts,
   admin,
   fee_asset_id,
   fee_account
 } from "./utils";
+import { hexToNum } from "@mutajs/utils";
 
 async function createAsset(txSender, name, symbol, supply, precision) {
   const payload = {
@@ -128,10 +129,7 @@ describe("asset service API test via muta-sdk-js", () => {
       8888,
       10000
     );
-    expect(caReceipt.response.isError).toBe(true);
-    expect(caReceipt.response.ret).toBe(
-      "[ProtocolError] Kind: Service Error: FeeNotEnough"
-    );
+    expect(caReceipt.response.response.errorMessage).toBe("Lack of balance");
     // add fee token to accounts
     await Promise.all(
       accounts.map(account =>
@@ -145,23 +143,23 @@ describe("asset service API test via muta-sdk-js", () => {
       fee_account
     );
     caReceipt = await createAsset(accounts[0], "Test Token", "TT", 8888, 10000);
-    expect(caReceipt.response.isError).toBe(false);
+    expect(caReceipt.response.response.code).toBe(0);
     const fee_account_balance_after = await getBalance(
       fee_asset_id,
       fee_account
     );
-    const caRet = JSON.parse(caReceipt.response.ret);
+    const caRet = JSON.parse(caReceipt.response.response.succeedData);
     const assetID = caRet.id;
 
     // check fee account balance
     expect(
-      JSON.parse(fee_account_balance_before.ret).balance <
-        JSON.parse(fee_account_balance_after.ret).balance
+      JSON.parse(fee_account_balance_before.succeedData).balance <
+        JSON.parse(fee_account_balance_after.succeedData).balance
     ).toBe(true);
 
     // Get asset
     const gaRes = await getAsset(assetID);
-    const gaRet = JSON.parse(gaRes.ret);
+    const gaRet = JSON.parse(gaRes.succeedData);
     expect(gaRet.id).toBe(assetID);
     expect(gaRet.name).toBe("Test Token");
     expect(gaRet.symbol).toBe("TT");
@@ -177,14 +175,14 @@ describe("asset service API test via muta-sdk-js", () => {
       88
     );
     // console.log("transfer receipt: ", tranReceipt);
-    expect(tranReceipt.response.isError).toBe(false);
+    expect(tranReceipt.response.response.code).toBe(0);
 
     // Check balance
     const issuerBalanceRes = await getBalance(assetID, accounts[0].address);
     // console.log("balance res:", issuerBalanceRes);
-    const issuerBalance = JSON.parse(issuerBalanceRes.ret).balance;
+    const issuerBalance = JSON.parse(issuerBalanceRes.succeedData).balance;
     let recipientBalanceRes = await getBalance(assetID, accounts[1].address);
-    let recipientBalance = JSON.parse(recipientBalanceRes.ret).balance;
+    let recipientBalance = JSON.parse(recipientBalanceRes.succeedData).balance;
     expect(issuerBalance).toBe(8800);
     expect(recipientBalance).toBe(88);
 
@@ -195,7 +193,7 @@ describe("asset service API test via muta-sdk-js", () => {
       accounts[2].address,
       8
     );
-    expect(apprReceipt.response.isError).toBe(false);
+    expect(apprReceipt.response.response.code).toBe(0);
 
     // Check allowance
     let alloRes = await getAllowance(
@@ -203,7 +201,7 @@ describe("asset service API test via muta-sdk-js", () => {
       accounts[1].address,
       accounts[2].address
     );
-    let allowance = JSON.parse(alloRes.ret).value;
+    let allowance = JSON.parse(alloRes.succeedData).value;
     expect(allowance).toBe(8);
 
     // Transfer from
@@ -214,13 +212,13 @@ describe("asset service API test via muta-sdk-js", () => {
       accounts[2].address,
       8
     );
-    expect(tfReceipt.response.isError).toBe(false);
+    expect(tfReceipt.response.response.code).toBe(0);
 
     // Check balance and allowance
     const senderBalanceRes = await getBalance(assetID, accounts[1].address);
-    const senderBalance = JSON.parse(senderBalanceRes.ret).balance;
+    const senderBalance = JSON.parse(senderBalanceRes.succeedData).balance;
     recipientBalanceRes = await getBalance(assetID, accounts[2].address);
-    recipientBalance = JSON.parse(recipientBalanceRes.ret).balance;
+    recipientBalance = JSON.parse(recipientBalanceRes.succeedData).balance;
     expect(senderBalance).toBe(80);
     expect(recipientBalance).toBe(8);
     alloRes = await getAllowance(
@@ -228,7 +226,7 @@ describe("asset service API test via muta-sdk-js", () => {
       accounts[1].address,
       accounts[2].address
     );
-    allowance = JSON.parse(alloRes.ret).value;
+    allowance = JSON.parse(alloRes.succeedData).value;
     expect(allowance).toBe(0);
   });
 });

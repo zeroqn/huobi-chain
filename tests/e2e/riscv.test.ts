@@ -2,7 +2,7 @@ import {
   muta,
   CHAIN_CONFIG,
   delay,
-  client,
+  mutaClient as client,
   accounts,
   admin,
   str2hex,

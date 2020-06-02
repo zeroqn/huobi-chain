@@ -10,20 +10,22 @@
     "prettier": "prettier --write **/*.{js,ts,graphql}"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "muta-sdk": "^0.7.0-alpha.0",
-    "shelljs": "^0.8.3",
+    "@mutajs/service": "^0.11.0-dev.0",
+    "@mutajs/utils": "^0.11.0-dev.0",
+    "@types/node": "^12.12.8",
+    "apollo-boost": "^0.4.4",
+    "graphql": "^14.5.8",
+    "graphql-tag": "^2.10.1",
+    "muta-sdk": "^0.11.0-dev.0",
+    "node-fetch": "^2.6.0",
     "toml": "^3.0.0",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
   },
   "devDependencies": {
     "@types/jest": "^24.0.23",
-    "@types/lodash": "^4.14.149",
-    "@types/node": "^12.12.8",
-    "@types/zen-observable": "^0.8.0",
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
-    "ts-jest": "^24.1.0"
+    "ts-jest": "^26.0.0"
   }
 }

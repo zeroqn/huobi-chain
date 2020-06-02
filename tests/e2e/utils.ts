@@ -1,21 +1,30 @@
+import fetch from "node-fetch";
+import { createHttpLink } from "apollo-link-http";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import ApolloClient from "apollo-client";
 import { readFileSync } from "fs";
-import { Muta, Client } from "muta-sdk";
-const toml = require("toml");
+import { Muta } from "muta-sdk";
+import { parse as toml_parse } from "toml";
 
-export const CHAIN_CONFIG = toml.parse(readFileSync("./chain.toml", "utf-8"));
-export const GENESIS = toml.parse(readFileSync("./genesis.toml", "utf-8"));
+export const CHAIN_CONFIG = toml_parse(readFileSync("./chain.toml", "utf-8"));
+export const GENESIS = toml_parse(readFileSync("./genesis.toml", "utf-8"));
 
-export const muta = Muta.createDefaultMutaInstance();
-// export const client = muta.client('0xffffffff', '0x1');
-
-export const endpoint = process.env.ENDPOINT || "http://127.0.0.1:8000/graphql";
-export const client = new Client({
-  chainId: "0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036",
-  defaultCyclesLimit: "0xffffffff",
-  defaultCyclesPrice: "0x1",
-  endpoint,
-  maxTimeout: 50000
+export const CHAIN_ID =
+  "0xb6a4d7da21443f5e816e8700eea87610e6d769657d6b8ec73028457bf2ca4036";
+export const API_URL = process.env.API_URL || "http://localhost:8000/graphql";
+export const client = new ApolloClient({
+  link: createHttpLink({
+    uri: API_URL,
+    fetch: fetch
+  }),
+  cache: new InMemoryCache(),
+  defaultOptions: { query: { fetchPolicy: "no-cache" } }
 });
+export const muta = new Muta({
+  endpoint: API_URL,
+  chainId: CHAIN_ID
+});
+export const mutaClient = muta.client();
 
 export function makeid(length: number) {
   var result = "";

@@ -1,5 +1,6 @@
-import { muta, admin as ADMIN, delay, client, accounts } from "./utils";
+import { muta, admin as ADMIN, delay, mutaClient as client, accounts } from "./utils";
 import { add_fee_token_to_accounts } from "./helper";
+import { hexToNum } from "@mutajs/utils";
 
 async function setAdmin(admin) {
   const tx = await client.composeTransaction({
@@ -12,6 +13,7 @@ async function setAdmin(admin) {
   const signed_tx = ADMIN.signTransaction(tx);
   const hash = await client.sendTransaction(signed_tx);
   const receipt = await client.getReceipt(hash);
+  console.log(receipt);
   return receipt;
 }
 
@@ -78,28 +80,34 @@ describe("node manager service API test via muta-sdk-js", () => {
   test("test regular progress", async () => {
     // Set admin
     let receipt = await setAdmin(accounts[0].address);
-    expect(receipt.response.isError).toBe(false);
-    let admin = accounts[0];
+    expect(hexToNum(receipt.response.response.code)).toBe(0);
+
     // Get admin
     let res = await getAdmin();
-    let ret = JSON.parse(res.ret);
-    expect(ret).toBe(accounts[0].address);
+    expect(hexToNum(res.code)).toBe(0);
+
+    let admin_addr = JSON.parse(res.succeedData);
+    expect(admin_addr).toBe(accounts[0].address);
 
     // Update interval
+    let admin = accounts[0];
     receipt = await updateInterval(admin, 666);
-    expect(receipt.response.isError).toBe(false);
+    expect(hexToNum(receipt.response.response.code)).toBe(0);
+
     res = await getMetadata();
-    ret = JSON.parse(res.ret);
-    expect(ret.interval).toBe(666);
+    let metadata = JSON.parse(res.succeedData);
+    expect(hexToNum(metadata.interval)).toBe(666);
 
     // Update ratio
     receipt = await updateRatio(admin, 16, 16, 16, 6);
-    expect(receipt.response.isError).toBe(false);
+    expect(hexToNum(receipt.response.response.code)).toBe(0);
+
     res = await getMetadata();
-    ret = JSON.parse(res.ret);
-    expect(ret.propose_ratio).toBe(16);
-    expect(ret.prevote_ratio).toBe(16);
-    expect(ret.precommit_ratio).toBe(16);
-    expect(ret.brake_ratio).toBe(6);
+    metadata = JSON.parse(res.succeedData);
+
+    expect(metadata.propose_ratio).toBe(16);
+    expect(metadata.prevote_ratio).toBe(16);
+    expect(metadata.precommit_ratio).toBe(16);
+    expect(metadata.brake_ratio).toBe(6);
   });
 });

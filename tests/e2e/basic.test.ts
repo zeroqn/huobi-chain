@@ -1,4 +1,4 @@
-import { muta, CHAIN_CONFIG, delay, client, accounts } from "./utils";
+import { muta, CHAIN_CONFIG, delay, mutaClient as client, accounts } from "./utils";
 
 describe("basic API test via muta-sdk-js", () => {
   test("getLatestBlockHeight", async () => {

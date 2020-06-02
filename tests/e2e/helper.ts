@@ -1,4 +1,4 @@
-import { client, accounts, admin, fee_asset_id } from "./utils";
+import { mutaClient as client, accounts, admin, fee_asset_id } from "./utils";
 
 export async function transfer(txSender, assetID, to, value) {
   const payload = {
