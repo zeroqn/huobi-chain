@@ -77,7 +77,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     ) -> ServiceResponse<String> {
         let contract = match self.sdk.borrow().get_value::<_, Contract>(&payload.address) {
             Some(c) => c,
-            None => return ServiceError::ContractNotExists(payload.address.as_hex()).into(),
+            None => return ServiceError::ContractNotFound(payload.address.as_hex()).into(),
         };
         let code = match self.sdk.borrow().get_value::<_, Bytes>(&contract.code_hash) {
             Some(c) => c,
@@ -254,7 +254,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
         let contract = match self.sdk.borrow().get_value::<_, Contract>(&payload.address) {
             Some(c) => c,
-            None => return ServiceError::ContractNotExists(payload.address.as_hex()).into(),
+            None => return ServiceError::ContractNotFound(payload.address.as_hex()).into(),
         };
 
         let mut resp = GetContractResp {
@@ -422,28 +422,28 @@ fn combine_key(addr: &[u8], key: &[u8]) -> Hash {
 
 #[derive(Debug, Display, From)]
 pub enum ServiceError {
-    #[display(fmt = "method {} can not be invoke with call", _0)]
+    #[display(fmt = "Method {} can not be invoke with call", _0)]
     NotInExecContext(String),
 
     #[display(fmt = "Contract {} not exists", _0)]
-    ContractNotExists(String),
+    ContractNotFound(String),
 
-    #[display(fmt = "code not found")]
+    #[display(fmt = "Code not found")]
     CodeNotFound,
 
-    #[display(fmt = "CKB VM return non zero, exitcode: {}, ret: {}", exitcode, ret)]
+    #[display(fmt = "None zero exit {} msg {}", exitcode, ret)]
     NonZeroExitCode { exitcode: i8, ret: String },
 
-    #[display(fmt = "ckb vm error: {:?}", _0)]
+    #[display(fmt = "VM: {:?}", _0)]
     CkbVm(ckb_vm::Error),
 
-    #[display(fmt = "json serde error: {:?}", _0)]
+    #[display(fmt = "Codec: {:?}", _0)]
     Serde(serde_json::error::Error),
 
-    #[display(fmt = "hex decode error: {:?}", _0)]
+    #[display(fmt = "Hex decode: {:?}", _0)]
     HexDecode(hex::FromHexError),
 
-    #[display(fmt = "invalid key '{:?}', should be a hex string", _0)]
+    #[display(fmt = "Invalid key '{:?}', should be a hex string", _0)]
     InvalidKey(String),
 
     #[display(fmt = "Not authorized")]
@@ -462,7 +462,7 @@ impl ServiceError {
 
         match self {
             NotInExecContext(_) => 101,
-            ContractNotExists(_) => 102,
+            ContractNotFound(_) => 102,
             CodeNotFound => 103,
             NonZeroExitCode { .. } => 104,
             CkbVm(_) => 105,
