@@ -1,86 +1,85 @@
-import { muta, CHAIN_CONFIG, delay, mutaClient as client, accounts } from "./utils";
-import { hexToNum } from "@mutajs/utils";
+/* eslint-env node, jest */
+import {
+  client, accounts, hexToNum,
+  // eslint-disable-next-line
+} from './utils';
 
-describe("basic API test via muta-sdk-js", () => {
-  test("getLatestBlockHeight", async () => {
-    const current_height = await client.getLatestBlockHeight();
-    // console.log(current_height);
-    expect(current_height).toBeGreaterThan(0);
+describe('basic API test via muta-sdk-js', () => {
+  test('getLatestBlockHeight', async () => {
+    const currentHeight = await client.getLatestBlockHeight();
+    expect(currentHeight).toBeGreaterThan(0);
   });
 
-  test("getBlock", async () => {
-    const block = await client.getBlock("0x01");
-    // console.log(block);
+  test('getBlock', async () => {
+    const block = await client.getBlock('0x01');
     expect(hexToNum(block.header.height)).toBe(1);
   });
 
-  test("send_tx_exceed_cycles_limit", async () => {
+  test('send_tx_exceed_cycles_limit', async () => {
     const tx = await client.composeTransaction({
-      method: "create_asset",
+      method: 'create_asset',
       payload: {
-        name: "Muta Token",
-        symbol: "MT",
-        supply: 1000000000
+        name: 'Muta Token',
+        symbol: 'MT',
+        supply: 1000000000,
       },
-      serviceName: "asset"
+      serviceName: 'asset',
     });
-    tx.cyclesLimit = "0xE8D4A51FFF";
+    tx.cyclesLimit = '0xE8D4A51FFF';
     const account = accounts[0];
-    const signed_tx = account.signTransaction(tx);
-    // console.log(signed_tx);
+    const signedTx = account.signTransaction(tx);
     try {
-      const hash = await client.sendTransaction(signed_tx);
+      await client.sendTransaction(signedTx);
       expect(true).toBe(false);
     } catch (err) {
-      // console.log(err);
-      expect(err.response.errors[0].message.includes("ExceedCyclesLimit")).toBe(
-        true
+      expect(err.response.errors[0].message.includes('ExceedCyclesLimit')).toBe(
+        true,
       );
     }
   });
 
-  test("send_tx_exceed_tx_size_limit", async () => {
+  test('send_tx_exceed_tx_size_limit', async () => {
     const tx = await client.composeTransaction({
-      method: "create_asset",
+      method: 'create_asset',
       payload: {
-        name: "Muta Token",
-        symbol: "MT",
+        name: 'Muta Token',
+        symbol: 'MT',
         supply: 1000000000,
-        bigdata: "a".repeat(300000)
+        bigdata: 'a'.repeat(300000),
       },
-      serviceName: "asset"
+      serviceName: 'asset',
     });
 
     const account = accounts[0];
-    const signed_tx = account.signTransaction(tx);
+    const signedTx = account.signTransaction(tx);
 
     try {
-      await client.sendTransaction(signed_tx);
+      await client.sendTransaction(signedTx);
     } catch (err) {
-      const err_msg = err.response.errors[0].message;
-      expect(err_msg.includes("ExceedSizeLimit")).toBe(true);
+      const errMsg = err.response.errors[0].message;
+      expect(errMsg.includes('ExceedSizeLimit')).toBe(true);
     }
   });
 
-  test("send tx, get tx and receipt", async () => {
+  test('send tx, get tx and receipt', async () => {
     const tx = await client.composeTransaction({
-      method: "create_asset",
+      method: 'create_asset',
       payload: {
-        name: "Muta Token",
-        symbol: "MT",
-        supply: 1000000000
+        name: 'Muta Token',
+        symbol: 'MT',
+        supply: 1000000000,
       },
-      serviceName: "asset"
+      serviceName: 'asset',
     });
 
     const account = accounts[0];
-    const signed_tx = account.signTransaction(tx);
+    const signedTx = account.signTransaction(tx);
 
-    const hash = await client.sendTransaction(signed_tx);
+    const hash = await client.sendTransaction(signedTx);
     const receipt = await client.getReceipt(hash);
     expect(receipt.txHash).toBe(hash);
 
-    const committed_tx = await client.getTransaction(hash);
-    expect(committed_tx.txHash).toBe(hash);
+    const committedTx = await client.getTransaction(hash);
+    expect(committedTx.txHash).toBe(hash);
   });
 });

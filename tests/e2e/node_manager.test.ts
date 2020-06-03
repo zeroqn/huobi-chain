@@ -1,83 +1,92 @@
-import { muta, admin as ADMIN, delay, mutaClient as client, accounts } from "./utils";
-import { add_fee_token_to_accounts } from "./helper";
-import { hexToNum } from "@mutajs/utils";
+/* eslint-env node, jest */
+import {
+  client, accounts, hexToNum, admin as presetAdmin,
+  // eslint-disable-next-line
+} from './utils';
+// eslint-disable-next-line
+import { addFeeTokenToAccounts } from './helper';
 
 async function setAdmin(admin) {
   const tx = await client.composeTransaction({
-    method: "set_admin",
+    method: 'set_admin',
     payload: {
-      admin
+      admin,
     },
-    serviceName: "node_manager"
+    serviceName: 'node_manager',
   });
-  const signed_tx = ADMIN.signTransaction(tx);
-  const hash = await client.sendTransaction(signed_tx);
+
+  const signedTx = presetAdmin.signTransaction(tx);
+  const hash = await client.sendTransaction(signedTx);
   const receipt = await client.getReceipt(hash);
-  console.log(receipt);
+
   return receipt;
 }
 
 async function getAdmin() {
   const res = await client.queryService({
-    serviceName: "node_manager",
-    method: "get_admin",
-    payload: ""
+    serviceName: 'node_manager',
+    method: 'get_admin',
+    payload: '',
   });
   return res;
 }
 
 async function updateInterval(admin, interval) {
   const tx = await client.composeTransaction({
-    method: "update_interval",
+    method: 'update_interval',
     payload: {
-      interval
+      interval,
     },
-    serviceName: "node_manager"
+    serviceName: 'node_manager',
   });
-  const signed_tx = admin.signTransaction(tx);
-  const hash = await client.sendTransaction(signed_tx);
+
+  const signedTx = admin.signTransaction(tx);
+  const hash = await client.sendTransaction(signedTx);
   const receipt = await client.getReceipt(hash);
+
   return receipt;
 }
 
 async function updateRatio(
   admin,
-  propose_ratio,
-  prevote_ratio,
-  precommit_ratio,
-  brake_ratio
+  proposeRatio,
+  prevoteRatio,
+  precommitRatio,
+  brakeRatio,
 ) {
   const tx = await client.composeTransaction({
-    method: "update_ratio",
+    method: 'update_ratio',
     payload: {
-      propose_ratio,
-      prevote_ratio,
-      precommit_ratio,
-      brake_ratio
+      propose_ratio: proposeRatio,
+      prevote_ratio: prevoteRatio,
+      precommit_ratio: precommitRatio,
+      brake_ratio: brakeRatio,
     },
-    serviceName: "node_manager"
+    serviceName: 'node_manager',
   });
-  const signed_tx = admin.signTransaction(tx);
-  const hash = await client.sendTransaction(signed_tx);
+
+  const signedTx = admin.signTransaction(tx);
+  const hash = await client.sendTransaction(signedTx);
   const receipt = await client.getReceipt(hash);
+
   return receipt;
 }
 
 async function getMetadata() {
   const res = await client.queryService({
-    serviceName: "metadata",
-    method: "get_metadata",
-    payload: ""
+    serviceName: 'metadata',
+    method: 'get_metadata',
+    payload: '',
   });
   return res;
 }
 
-describe("node manager service API test via muta-sdk-js", () => {
+describe('node manager service API test via muta-sdk-js', () => {
   beforeAll(async () => {
-    await add_fee_token_to_accounts(accounts.map(a => a.address));
+    await addFeeTokenToAccounts(accounts.map((a) => a.address));
   });
 
-  test("test regular progress", async () => {
+  test('test regular progress', async () => {
     // Set admin
     let receipt = await setAdmin(accounts[0].address);
     expect(hexToNum(receipt.response.response.code)).toBe(0);
@@ -86,11 +95,11 @@ describe("node manager service API test via muta-sdk-js", () => {
     let res = await getAdmin();
     expect(hexToNum(res.code)).toBe(0);
 
-    let admin_addr = JSON.parse(res.succeedData);
-    expect(admin_addr).toBe(accounts[0].address);
+    const adminAddr = JSON.parse(res.succeedData);
+    expect(adminAddr).toBe(accounts[0].address);
 
     // Update interval
-    let admin = accounts[0];
+    const admin = accounts[0];
     receipt = await updateInterval(admin, 666);
     expect(hexToNum(receipt.response.response.code)).toBe(0);
 
