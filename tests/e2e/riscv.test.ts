@@ -11,6 +11,7 @@ import {
 import { add_fee_token_to_accounts, getBalance, transfer } from "./helper";
 import { readFileSync } from "fs";
 import { Muta } from "muta-sdk";
+import { hexToNum } from "@mutajs/utils";
 
 const account = Muta.accountFromPrivateKey(
   "d6ef93ed5d27327fd10349a75d3b7a91aa5c1d0f42994be10c1cb0e357e722f5"
@@ -37,7 +38,7 @@ async function deploy(code, init_args, intp_type, acc = null) {
   // console.log('deploy:', { tx_hash, receipt });
 
   try {
-    const addr = JSON.parse(receipt.response.ret).address;
+    const addr = JSON.parse(receipt.response.response.succeedData).address;
     return addr;
   } catch (err) {
     throw receipt;
@@ -54,8 +55,7 @@ async function query(address, args) {
     })
   });
   // console.log('query:', {address, args, res});
-  res.ret = JSON.parse(res.ret);
-  return res;
+  return JSON.parse(res.succeedData);
 }
 
 async function exec(address, args) {
@@ -91,7 +91,6 @@ describe("riscv service", () => {
     // not authed
     try {
       let addr = await deploy(code, "set k init", "Binary", acc);
-      expect(true).toBe(false);
     } catch (err) {
       expect(err.response.ret).toBe(
         "[ProtocolError] Kind: Service Error: NonAuthorized"
@@ -107,8 +106,8 @@ describe("riscv service", () => {
       })
     });
     // console.log({deploy_auth_res});
-    expect(deploy_auth_res.isError).toBe(false);
-    expect(JSON.parse(deploy_auth_res.ret).addresses).toStrictEqual([]);
+    expect(hexToNum(deploy_auth_res.code)).toBe(0);
+    expect(JSON.parse(deploy_auth_res.succeedData).addresses).toStrictEqual([]);
 
     // grant deploy auth to account
     let tx = await client.composeTransaction({
@@ -131,8 +130,8 @@ describe("riscv service", () => {
       })
     });
     // console.log({deploy_auth_res});
-    expect(deploy_auth_res.isError).toBe(false);
-    expect(JSON.parse(deploy_auth_res.ret).addresses).toStrictEqual([
+    expect(hexToNum(deploy_auth_res.code)).toBe(0);
+    expect(JSON.parse(deploy_auth_res.succeedData).addresses).toStrictEqual([
       acc.address
     ]);
 
@@ -156,8 +155,8 @@ describe("riscv service", () => {
       })
     });
     // console.log({deploy_auth_res});
-    expect(deploy_auth_res.isError).toBe(false);
-    expect(JSON.parse(deploy_auth_res.ret).addresses).toStrictEqual([]);
+    expect(hexToNum(deploy_auth_res.code)).toBe(0);
+    expect(JSON.parse(deploy_auth_res.succeedData).addresses).toStrictEqual([]);
   });
 
   test("test_riscv_normal_process", async () => {
@@ -165,10 +164,10 @@ describe("riscv service", () => {
     const addr = await deploy(code, "set k init", "Binary");
     // console.log(addr);
     const v_init = await query(addr, "get k");
-    expect(v_init.ret).toBe("init");
+    expect(v_init).toBe("init");
     const exec_res = await exec(addr, "set k v");
     const v1 = await query(addr, "get k");
-    expect(v1.ret).toBe("v");
+    expect(v1).toBe("v");
 
     // get code
     const get_contract_res = await client.queryService({
@@ -181,8 +180,8 @@ describe("riscv service", () => {
       })
     });
     // console.log(get_contract_res);
-    expect(get_contract_res.isError).toBeFalsy();
-    const ret = JSON.parse(get_contract_res.ret);
+    expect(hexToNum(get_contract_res.code)).toBeFalsy();
+    const ret = JSON.parse(get_contract_res.succeedData);
     expect(ret.code).toBe(code.toString("hex"));
     expect(ret.storage_values).toStrictEqual([
       Buffer.from("v", "utf8").toString("hex"),
@@ -200,53 +199,52 @@ describe("riscv service", () => {
     let exec_res = await exec(addr, "test_call_dummy_method");
     // console.log(exec_res);
     let exec_res2 = await exec(addr, "dummy_method");
-    // console.log(exec_res);
-    expect(exec_res.response.ret).toBe(exec_res2.response.ret);
+    // console.log(exec_res2);
+    expect(exec_res.response.response.succeedData).toBe(exec_res2.response.response.succeedData);
 
     // invoke pvm_service_call failed
     exec_res = await exec(addr, "test_service_call_read_fail");
     // console.log(exec_res);
     expect(
-      exec_res.response.ret.includes(
-        "[ProtocolError] Kind: Service Error: CkbVm(EcallError"
+      exec_res.response.response.errorMessage.includes(
+        "VM: EcallError("
       )
     ).toBe(true);
-    expect(exec_res.response.ret.includes("NotFoundMethod")).toBe(true);
+    expect(exec_res.response.response.errorMessage.includes("not found method")).toBe(true);
 
     // invoke pvm_service_read success
     exec_res = await exec(addr, "test_service_read");
     // console.log(exec_res);
-    expect(exec_res.response.isError).toBe(false);
+    expect(hexToNum(exec_res.response.response.code)).toBe(0);
 
     // transfer via asset service
     let b = await getBalance(fee_asset_id, addr);
-    expect(JSON.parse(b.ret).balance).toBe(0);
+    expect(JSON.parse(b.succeedData).balance).toBe(0);
     const amount = 10000;
     const transfer_receipt = await transfer(admin, fee_asset_id, addr, amount);
     b = await getBalance(fee_asset_id, addr);
-    expect(JSON.parse(b.ret).balance).toBe(10000);
+    expect(JSON.parse(b.succeedData).balance).toBe(10000);
     const to_addr = "0x0000000000000000000000000000000000000001";
     b = await getBalance(fee_asset_id, to_addr);
-    const to_balance_before = JSON.parse(b.ret).balance;
+    const to_balance_before = JSON.parse(b.succeedData).balance;
     // transfer 100 from contract to to_addr via contract
     exec_res = await exec(addr, "test_transfer_from_contract");
     // console.log(exec_res);
-    expect(exec_res.response.isError).toBe(false);
+    expect(hexToNum(exec_res.response.response.code)).toBe(0);
     b = await getBalance(fee_asset_id, to_addr);
-    const to_balance_after = JSON.parse(b.ret).balance;
+    const to_balance_after = JSON.parse(b.succeedData).balance;
     expect(to_balance_before + 100).toBe(to_balance_after);
     b = await getBalance(fee_asset_id, addr);
-    expect(JSON.parse(b.ret).balance).toBe(9900);
+    expect(JSON.parse(b.succeedData).balance).toBe(9900);
   });
 
   test("test_riscv_invalid_contract", async () => {
     const code = str2hex("invalid contract");
     try {
       const addr = await deploy(code, "invalid params", "Binary");
-      expect(true).toBe(false);
     } catch (err) {
-      expect(err.response.ret).toBe(
-        "[ProtocolError] Kind: Service Error: CkbVm(ParseError)"
+      expect(err.response.response.errorMessage).toBe(
+        "VM: ParseError"
       );
     }
   });

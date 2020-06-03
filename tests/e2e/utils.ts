@@ -24,7 +24,7 @@ export const muta = new Muta({
   endpoint: API_URL,
   chainId: CHAIN_ID
 });
-export const mutaClient = muta.client();
+export const mutaClient = muta.client("0xffffffff", "0x1");
 
 export function makeid(length: number) {
   var result = "";
