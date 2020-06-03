@@ -13,6 +13,7 @@
     "@mutajs/service": "^0.11.0-dev.1",
     "@mutajs/utils": "^0.11.0-dev.1",
     "@types/node": "^12.12.43",
+    "shelljs": "^0.8.3",
     "apollo-boost": "^0.4.4",
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",
