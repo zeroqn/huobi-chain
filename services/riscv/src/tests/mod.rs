@@ -136,7 +136,18 @@ impl Dispatcher for MockDispatcher {
 
         RISCV_SERVICE.with(|cell| {
             let mut service = cell.borrow_mut();
-            service.exec(context, payload)
+
+            // binding-macro/src/service.rs => fn write_()
+            let resp = service.exec(context, payload);
+            if resp.is_error() {
+                return resp;
+            }
+
+            let mut data_json = serde_json::to_string(&resp.succeed_data).expect("json encode");
+            if data_json == "null" {
+                data_json = "".to_owned();
+            }
+            ServiceResponse::<String>::from_succeed(data_json)
         })
     }
 }

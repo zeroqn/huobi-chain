@@ -415,5 +415,6 @@ fn should_support_pvm_service_call() {
     let payload = ExecPayload::new(address, args);
 
     let ret = service!(service, exec, context.make(), payload);
-    assert_eq!(ret, "self");
+    let expect_ret = serde_json::to_string("self").expect("should be json encoded");
+    assert_eq!(ret, expect_ret);
 }

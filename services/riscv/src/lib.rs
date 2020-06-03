@@ -357,7 +357,18 @@ where
             Err(err) => return ServiceError::Serde(err).into(),
         };
 
-        self.service_call("riscv", "exec", &payload_json, current_cycle, false)
+        let resp = self.service_call("riscv", "exec", &payload_json, current_cycle, false);
+        if resp.is_error() {
+            return ServiceResponse::from_error(resp.code, resp.error_message);
+        }
+
+        let (json_ret, cycle) = resp.succeed_data;
+        let raw_ret = match serde_json::from_str(&json_ret) {
+            Ok(r) => r,
+            Err(err) => return ServiceError::Serde(err).into(),
+        };
+
+        ServiceResponse::from_succeed((raw_ret, cycle))
     }
 
     fn service_call(
