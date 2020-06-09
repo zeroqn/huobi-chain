@@ -24,3 +24,4 @@ log = "0.4"
 cita_trie = "2.0"
 async-trait = "0.1"
 framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.1.2-beta2" }
+env_logger = "0.7.1"

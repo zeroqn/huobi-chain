@@ -3113,6 +3113,7 @@ dependencies = [
  "cita_trie",
  "ckb-vm",
  "derive_more 0.15.0",
+ "env_logger",
  "framework",
  "hex",
  "log",

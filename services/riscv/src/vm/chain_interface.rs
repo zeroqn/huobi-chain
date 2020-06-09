@@ -93,8 +93,7 @@ impl<SDK: ServiceSDK + 'static> WriteableChain<SDK> {
         }
 
         cycle_ctx.all_cycles_used = cycle_ctx.inner.get_cycles_used();
-        let call_ret: String = resp.succeed_data;
-        ServiceResponse::from_succeed((call_ret, cycle_ctx.all_cycles_used))
+        ServiceResponse::from_succeed((resp.succeed_data, cycle_ctx.all_cycles_used))
     }
 
     fn contract_key(&self, key: &Bytes) -> Hash {
