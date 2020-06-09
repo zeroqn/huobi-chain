@@ -116,8 +116,13 @@ pub struct GetContractPayload {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
-pub struct Addresses {
+pub struct AuthPayload {
     #[serde(default)]
+    pub addresses: Vec<Address>,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+pub struct AuthorizedList {
     pub addresses: Vec<Address>,
 }
 

@@ -8,8 +8,8 @@ pub mod vm;
 
 use error::ServiceError;
 use types::{
-    Addresses, Contract, DeployPayload, DeployResp, ExecPayload, GetContractPayload,
-    GetContractResp, InitGenesisPayload,
+    AuthPayload, AuthorizedList, Contract, DeployPayload, DeployResp, ExecPayload,
+    GetContractPayload, GetContractResp, InitGenesisPayload,
 };
 use vm::{
     ChainInterface, Interpreter, InterpreterConf, InterpreterParams, ReadonlyChain, WriteableChain,
@@ -96,9 +96,9 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn check_deploy_auth(
         &self,
         ctx: ServiceContext,
-        payload: Addresses,
-    ) -> ServiceResponse<Addresses> {
-        let mut res = Addresses::default();
+        payload: AuthPayload,
+    ) -> ServiceResponse<AuthorizedList> {
+        let mut res = AuthorizedList::default();
         sub_cycles!(ctx, payload.addresses.len() as u64 * 1000);
 
         for addr in payload.addresses {
@@ -188,7 +188,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn grant_deploy_auth(
         &mut self,
         ctx: ServiceContext,
-        payload: Addresses,
+        payload: AuthPayload,
     ) -> ServiceResponse<()> {
         if self.no_authority(&ctx) {
             return ServiceError::NonAuthorized.into();
@@ -205,7 +205,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn revoke_deploy_auth(
         &mut self,
         ctx: ServiceContext,
-        payload: Addresses,
+        payload: AuthPayload,
     ) -> ServiceResponse<()> {
         if self.no_authority(&ctx) {
             return ServiceError::NonAuthorized.into();
