@@ -53,7 +53,8 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallChainInterfac
                     .borrow_mut()
                     .set_storage(Bytes::from(key), Bytes::from(val));
                 if resp.is_error() {
-                    return Err(ckb_vm::Error::EcallError(code, resp.error_message));
+                    log::error!("set storage {}", resp.error_message);
+                    return Err(ckb_vm::Error::InvalidEcall(code));
                 }
 
                 Ok(true)
@@ -105,7 +106,8 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallChainInterfac
                         .borrow_mut()
                         .contract_call(address, call_args, machine.cycles());
                 if call_resp.is_error() {
-                    return Err(ckb_vm::Error::EcallError(code, call_resp.error_message));
+                    log::error!("contract call {}", call_resp.error_message);
+                    return Err(ckb_vm::Error::InvalidEcall(code));
                 }
 
                 let (ret, current_cycle) = call_resp.succeed_data;
@@ -158,7 +160,8 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallChainInterfac
                     )
                 };
                 if resp.is_error() {
-                    return Err(ckb_vm::Error::EcallError(code, resp.error_message));
+                    log::error!("service call {}", resp.error_message);
+                    return Err(ckb_vm::Error::InvalidEcall(code));
                 }
 
                 let (ret, current_cycle) = resp.succeed_data;
