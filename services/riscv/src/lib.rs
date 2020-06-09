@@ -305,7 +305,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         self.sdk
             .borrow()
             .get_value::<_, Contract>(address)
-            .ok_or(ServiceError::ContractNotFound(address.as_hex()))
+            .ok_or_else(|| ServiceError::ContractNotFound(address.as_hex()))
     }
 
     fn load_contract_code(&self, address: &Address) -> Result<(Contract, Bytes), ServiceError> {

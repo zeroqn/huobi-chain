@@ -231,7 +231,7 @@ impl TestRiscvService {
         service.init_genesis(InitGenesisPayload {
             enable_whitelist: true,
             whitelist:        vec![admin.clone()],
-            admins:           vec![admin.clone()],
+            admins:           vec![admin],
         });
 
         service
