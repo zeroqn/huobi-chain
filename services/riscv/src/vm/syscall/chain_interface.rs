@@ -48,9 +48,13 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallChainInterfac
                 let key = get_arr(machine, key_ptr, key_len)?;
                 let val = get_arr(machine, val_ptr, val_len)?;
 
-                self.chain
+                let resp = self
+                    .chain
                     .borrow_mut()
                     .set_storage(Bytes::from(key), Bytes::from(val));
+                if resp.is_error() {
+                    return Err(ckb_vm::Error::EcallError(code, resp.error_message));
+                }
 
                 Ok(true)
             }
@@ -138,20 +142,26 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallChainInterfac
                 };
                 let payload = String::from_utf8_lossy(&payload);
 
-                let readonly = code == SYSCODE_SERVICE_READ;
-
-                let call_resp = self.chain.borrow_mut().service_call(
-                    &service,
-                    &method,
-                    &payload,
-                    machine.cycles(),
-                    readonly,
-                );
-                if call_resp.is_error() {
-                    return Err(ckb_vm::Error::EcallError(code, call_resp.error_message));
+                let resp = if code == SYSCODE_SERVICE_READ {
+                    self.chain.borrow_mut().service_read(
+                        &service,
+                        &method,
+                        &payload,
+                        machine.cycles(),
+                    )
+                } else {
+                    self.chain.borrow_mut().service_write(
+                        &service,
+                        &method,
+                        &payload,
+                        machine.cycles(),
+                    )
+                };
+                if resp.is_error() {
+                    return Err(ckb_vm::Error::EcallError(code, resp.error_message));
                 }
 
-                let (ret, current_cycle) = call_resp.succeed_data;
+                let (ret, current_cycle) = resp.succeed_data;
                 machine.set_cycles(current_cycle);
                 if ret_ptr != 0 {
                     machine.memory_mut().store_bytes(ret_ptr, ret.as_ref())?;
