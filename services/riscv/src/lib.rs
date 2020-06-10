@@ -2,21 +2,23 @@ mod common;
 #[cfg(test)]
 mod tests;
 
+pub mod authorization;
 pub mod error;
 pub mod types;
 pub mod vm;
 
+use authorization::Authorization;
 use error::ServiceError;
 use types::{
-    AuthPayload, AuthorizedList, Contract, DeployPayload, DeployResp, ExecPayload,
-    GetContractPayload, GetContractResp, InitGenesisPayload,
+    AddressList, Authorizer, Contract, DeployPayload, DeployResp, ExecPayload, GetContractPayload,
+    GetContractResp, InitGenesisPayload,
 };
 use vm::{
     ChainInterface, Interpreter, InterpreterConf, InterpreterParams, ReadonlyChain, WriteableChain,
 };
 
 use binding_macro::{genesis, read, service, write};
-use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK, StoreBool, StoreMap};
+use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK};
 use protocol::types::{Address, Hash, ServiceContext};
 use protocol::Bytes;
 
@@ -33,49 +35,34 @@ macro_rules! sub_cycles {
 }
 
 pub struct RiscvService<SDK> {
-    sdk:              Rc<RefCell<SDK>>,
-    deploy_auth:      Box<dyn StoreMap<Address, bool>>,
-    admins:           Box<dyn StoreMap<Address, bool>>,
-    enable_whitelist: Box<dyn StoreBool>,
+    sdk:           Rc<RefCell<SDK>>,
+    authorization: Authorization,
 }
 
 #[service]
 impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     pub fn init(sdk: SDK) -> Self {
         let sdk = Rc::new(RefCell::new(sdk));
+        let authorization = Authorization::new(&sdk);
 
-        let deploy_auth = sdk.borrow_mut().alloc_or_recover_map("deploy_auth");
-        let enable_whitelist = sdk.borrow_mut().alloc_or_recover_bool("enable_whitelist");
-        let admins = sdk.borrow_mut().alloc_or_recover_map("admins");
-
-        Self {
-            sdk,
-            deploy_auth,
-            enable_whitelist,
-            admins,
-        }
+        Self { sdk, authorization }
     }
 
+    // # Panic
     #[genesis]
     fn init_genesis(&mut self, payload: InitGenesisPayload) {
-        if payload.enable_whitelist && payload.admins.is_empty() {
-            panic!(
-                "If riscv whitelist is enabled, you should set at least one admin in genesis.toml"
-            );
-        }
-
-        self.enable_whitelist.set(payload.enable_whitelist);
-
-        for addr in payload.whitelist {
-            self.deploy_auth.insert(addr, true);
-        }
-        for addr in payload.admins {
-            self.admins.insert(addr, true);
-        }
+        self.authorization.init_genesis(payload);
     }
 
     #[read]
     fn call(&self, ctx: ServiceContext, payload: ExecPayload) -> ServiceResponse<String> {
+        if !self
+            .authorization
+            .granted(&payload.address, authorization::Kind::Contract)
+        {
+            return ServiceError::NonAuthorized.into();
+        }
+
         let (contract, code) = match self.load_contract_code(&payload.address) {
             Ok(c) => c,
             Err(err) => return err.into(),
@@ -96,13 +83,16 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn check_deploy_auth(
         &self,
         ctx: ServiceContext,
-        payload: AuthPayload,
-    ) -> ServiceResponse<AuthorizedList> {
-        let mut res = AuthorizedList::default();
+        payload: AddressList,
+    ) -> ServiceResponse<AddressList> {
+        let mut res = AddressList::default();
         sub_cycles!(ctx, payload.addresses.len() as u64 * 1000);
 
         for addr in payload.addresses {
-            if self.deploy_auth.contains(&addr) {
+            if self
+                .authorization
+                .contains(&addr, authorization::Kind::Deploy)
+            {
                 res.addresses.push(addr);
             }
         }
@@ -140,6 +130,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
             code_hash: contract.code_hash.clone(),
             intp_type: contract.intp_type,
             code,
+            authorizer: contract.authorizer,
             ..Default::default()
         };
 
@@ -168,6 +159,13 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
     #[write]
     fn exec(&mut self, ctx: ServiceContext, payload: ExecPayload) -> ServiceResponse<String> {
+        if !self
+            .authorization
+            .granted(&payload.address, authorization::Kind::Contract)
+        {
+            return ServiceError::NonAuthorized.into();
+        }
+
         let (contract, code) = match self.load_contract_code(&payload.address) {
             Ok(c) => c,
             Err(err) => return err.into(),
@@ -188,15 +186,19 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn grant_deploy_auth(
         &mut self,
         ctx: ServiceContext,
-        payload: AuthPayload,
+        payload: AddressList,
     ) -> ServiceResponse<()> {
-        if self.no_authority(&ctx) {
+        if !self.authorization.is_admin(&ctx) {
             return ServiceError::NonAuthorized.into();
         }
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         for addr in payload.addresses {
-            self.deploy_auth.insert(addr, true);
+            self.authorization.grant(
+                addr,
+                authorization::Kind::Deploy,
+                Authorizer::new(ctx.get_caller()),
+            );
         }
         ServiceResponse::from_succeed(())
     }
@@ -205,15 +207,16 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     fn revoke_deploy_auth(
         &mut self,
         ctx: ServiceContext,
-        payload: AuthPayload,
+        payload: AddressList,
     ) -> ServiceResponse<()> {
-        if self.no_authority(&ctx) {
+        if !self.authorization.is_admin(&ctx) {
             return ServiceError::NonAuthorized.into();
         }
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         for addr in payload.addresses {
-            self.deploy_auth.remove(&addr);
+            self.authorization
+                .revoke(&addr, authorization::Kind::Deploy);
         }
         ServiceResponse::from_succeed(())
     }
@@ -225,8 +228,10 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         payload: DeployPayload,
     ) -> ServiceResponse<DeployResp> {
         // Check authority list
-        let enable_whitelist = self.enable_whitelist.get();
-        if enable_whitelist && !self.deploy_auth.contains(&ctx.get_caller()) {
+        if !self
+            .authorization
+            .granted(&ctx.get_caller(), authorization::Kind::Deploy)
+        {
             return ServiceError::NonAuthorized.into();
         }
 
@@ -297,15 +302,66 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         }
     }
 
-    fn no_authority(&self, ctx: &ServiceContext) -> bool {
-        self.admins.contains(&ctx.get_caller())
+    #[write]
+    fn approve_contract(
+        &mut self,
+        ctx: ServiceContext,
+        payload: AddressList,
+    ) -> ServiceResponse<()> {
+        if !self.authorization.is_admin(&ctx) {
+            return ServiceError::NonAuthorized.into();
+        }
+        sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
+
+        let authorizer = Authorizer::new(ctx.get_caller());
+        for address in payload.addresses {
+            if let Err(e) = self.load_contract(&address) {
+                return e.into();
+            };
+
+            self.authorization
+                .grant(address, authorization::Kind::Contract, authorizer.clone());
+        }
+
+        ServiceResponse::from_succeed(())
+    }
+
+    #[write]
+    fn revoke_contract(
+        &mut self,
+        ctx: ServiceContext,
+        payload: AddressList,
+    ) -> ServiceResponse<()> {
+        if !self.authorization.is_admin(&ctx) {
+            return ServiceError::NonAuthorized.into();
+        }
+        sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
+
+        for address in payload.addresses {
+            if let Err(e) = self.load_contract(&address) {
+                return e.into();
+            };
+
+            self.authorization
+                .revoke(&address, authorization::Kind::Contract);
+        }
+
+        ServiceResponse::from_succeed(())
     }
 
     fn load_contract(&self, address: &Address) -> Result<Contract, ServiceError> {
-        self.sdk
+        let mut contract = self
+            .sdk
             .borrow()
             .get_value::<_, Contract>(address)
-            .ok_or_else(|| ServiceError::ContractNotFound(address.as_hex()))
+            .ok_or_else(|| ServiceError::ContractNotFound(address.as_hex()))?;
+
+        let authorizer = self
+            .authorization
+            .authorizer(address, authorization::Kind::Contract);
+        contract.authorizer = authorizer.inner();
+
+        Ok(contract)
     }
 
     fn load_contract_code(&self, address: &Address) -> Result<(Contract, Bytes), ServiceError> {
