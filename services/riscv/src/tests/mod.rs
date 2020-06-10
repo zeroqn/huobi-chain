@@ -263,7 +263,7 @@ fn should_deny_exec_contract_until_approved_with_authorization_enabled() {
     assert!(resp.is_error());
     assert_eq!(resp.code, ServiceError::NonAuthorized.code());
 
-    service!(service, approve_contract, ctx.make_admin(), AddressList {
+    service!(service, approve_contracts, ctx.make_admin(), AddressList {
         addresses: vec![deployed.address.clone()],
     });
 
@@ -294,7 +294,7 @@ fn should_return_contract_authorization_state_by_get_contract_api() {
     });
     assert!(contract.authorizer.is_none());
 
-    let approved = service.approve_contract(ctx.make_admin(), AddressList {
+    let approved = service.approve_contracts(ctx.make_admin(), AddressList {
         addresses: vec![deployed.address.clone()],
     });
     assert!(!approved.is_error());
@@ -323,11 +323,11 @@ fn should_not_revoke_a_contract_except_admins() {
     });
     assert_eq!(&deployed.init_ret, "");
 
-    service!(service, approve_contract, ctx.make_admin(), AddressList {
+    service!(service, approve_contracts, ctx.make_admin(), AddressList {
         addresses: vec![deployed.address.clone()],
     });
 
-    let revoked = service.revoke_contract(ctx.make(), AddressList {
+    let revoked = service.revoke_contracts(ctx.make(), AddressList {
         addresses: vec![deployed.address],
     });
     assert!(revoked.is_error());
@@ -347,7 +347,7 @@ fn should_not_approve_a_contract_except_admins() {
     });
     assert_eq!(&deployed.init_ret, "");
 
-    let approved = service.approve_contract(ctx.make(), AddressList {
+    let approved = service.approve_contracts(ctx.make(), AddressList {
         addresses: vec![deployed.address],
     });
     assert!(approved.is_error());

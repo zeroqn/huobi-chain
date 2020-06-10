@@ -303,7 +303,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     }
 
     #[write]
-    fn approve_contract(
+    fn approve_contracts(
         &mut self,
         ctx: ServiceContext,
         payload: AddressList,
@@ -327,7 +327,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
     }
 
     #[write]
-    fn revoke_contract(
+    fn revoke_contracts(
         &mut self,
         ctx: ServiceContext,
         payload: AddressList,
