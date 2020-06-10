@@ -236,7 +236,7 @@ fn should_deny_deploy_contract_until_granted_with_authorization_enabled() {
     assert_eq!(granted.addresses, vec![caller]);
 
     let deployed = service.deploy(ctx.make(), DeployPayload {
-        code:      code.clone(),
+        code,
         intp_type: InterpreterType::Binary,
         init_args: "set k init".into(),
     });
