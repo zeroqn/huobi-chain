@@ -99,11 +99,9 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         let mut res = AddressList::default();
         sub_cycles!(ctx, payload.addresses.len() as u64 * 1000);
 
+        let authorization = &self.authorization;
         for addr in payload.addresses {
-            if self
-                .authorization
-                .contains(&addr, authorization::Kind::Deploy)
-            {
+            if authorization.contains(&addr, authorization::Kind::Deploy) {
                 res.addresses.push(addr);
             }
         }
@@ -197,12 +195,11 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
+        let authorization_mut = &mut self.authorization;
+        let auth_kind = authorization::Kind::Deploy;
+
         for addr in payload.addresses {
-            self.authorization.grant(
-                addr,
-                authorization::Kind::Deploy,
-                Authorizer::new(ctx.get_caller()),
-            );
+            authorization_mut.grant(addr, auth_kind, Authorizer::new(ctx.get_caller()));
         }
         ServiceResponse::from_succeed(())
     }
@@ -314,13 +311,15 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         let authorizer = Authorizer::new(ctx.get_caller());
+        let auth_kind = authorization::Kind::Contract;
+
         for address in payload.addresses {
             if let Err(e) = self.load_contract(&address) {
                 return e.into();
             };
 
             self.authorization
-                .grant(address, authorization::Kind::Contract, authorizer.clone());
+                .grant(address, auth_kind, authorizer.clone());
         }
 
         ServiceResponse::from_succeed(())
@@ -357,6 +356,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         let authorizer = self
             .authorization
             .authorizer(address, authorization::Kind::Contract);
+
         contract.authorizer = authorizer.inner();
 
         Ok(contract)
