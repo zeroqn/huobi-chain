@@ -4,7 +4,7 @@ mod duktape;
 
 use crate::{
     types::{
-        AddressList, DeployPayload, ExecPayload, GetContractPayload, InitGenesisPayload,
+        AddressList, DeployPayload, Event, ExecPayload, GetContractPayload, InitGenesisPayload,
         InterpreterType,
     },
     RiscvService, ServiceError,
@@ -212,7 +212,7 @@ fn should_allow_change_state_through_write_write_chained_invocations() {
 }
 
 #[test]
-fn should_deny_deploy_contract_until_granted_with_authorization_enabled() {
+fn should_deny_deploy_contract_until_granted_when_authorization_enabled() {
     let mut service = TestRiscvService::new_restricted();
     let mut ctx = TestContext::default();
 
@@ -225,15 +225,24 @@ fn should_deny_deploy_contract_until_granted_with_authorization_enabled() {
     assert!(deployed.is_error());
     assert_eq!(deployed.code, ServiceError::NonAuthorized.code());
 
+    let context = ctx.make_admin();
     let caller = Address::from_hex(CALLER).expect("from CALLER");
-    service!(service, grant_deploy_auth, ctx.make_admin(), AddressList {
-        addresses: vec![caller.clone()],
+    let allow_list = vec![caller];
+    service!(service, grant_deploy_auth, context.clone(), AddressList {
+        addresses: allow_list.clone(),
+    });
+    assert_eq!(context.get_events().len(), 1);
+
+    let event: Event<AddressList> = context.get_events()[0].data.parse().expect("parse event");
+    assert_eq!(event.topic, "grant_deploy_auth");
+    assert_eq!(event.data, AddressList {
+        addresses: allow_list.clone(),
     });
 
     let granted = service!(service, check_deploy_auth, ctx.make(), AddressList {
-        addresses: vec![caller.clone()],
+        addresses: allow_list.clone(),
     });
-    assert_eq!(granted.addresses, vec![caller]);
+    assert_eq!(granted.addresses, allow_list);
 
     let deployed = service.deploy(ctx.make(), DeployPayload {
         code,
@@ -244,7 +253,53 @@ fn should_deny_deploy_contract_until_granted_with_authorization_enabled() {
 }
 
 #[test]
-fn should_deny_exec_contract_until_approved_with_authorization_enabled() {
+fn should_require_admin_permission_to_revoke_deploy_auth() {
+    let mut service = TestRiscvService::new_restricted();
+    let mut ctx = TestContext::default();
+
+    let context = ctx.make_admin();
+    let caller = Address::from_hex(CALLER).expect("from CALLER");
+    service!(service, grant_deploy_auth, context.clone(), AddressList {
+        addresses: vec![caller.clone()],
+    });
+
+    let code = read_code!("src/tests/simple_storage");
+    let deployed = service.deploy(ctx.make(), DeployPayload {
+        code:      code.clone(),
+        intp_type: InterpreterType::Binary,
+        init_args: "set k init".into(),
+    });
+    assert!(!deployed.is_error());
+
+    let revoked = service.revoke_deploy_auth(ctx.make(), AddressList {
+        addresses: vec![caller.clone()],
+    });
+    assert!(revoked.is_error());
+
+    let context = ctx.make_admin();
+    let revoked = service.revoke_deploy_auth(context.clone(), AddressList {
+        addresses: vec![caller.clone()],
+    });
+    assert!(!revoked.is_error());
+    assert_eq!(context.get_events().len(), 1);
+
+    let event: Event<AddressList> = context.get_events()[0].data.parse().expect("parse event");
+    assert_eq!(event.topic, "revoke_deploy_auth");
+    assert_eq!(event.data, AddressList {
+        addresses: vec![caller.clone()],
+    });
+
+    let deployed = service.deploy(ctx.make(), DeployPayload {
+        code,
+        intp_type: InterpreterType::Binary,
+        init_args: "set k init".into(),
+    });
+    assert!(deployed.is_error());
+    assert_eq!(deployed.code, ServiceError::NonAuthorized.code());
+}
+
+#[test]
+fn should_deny_exec_contract_until_approved_when_authorization_enabled() {
     let mut service = TestRiscvService::new_restricted();
     let mut ctx = TestContext::default();
 
@@ -311,7 +366,7 @@ fn should_return_contract_authorization_state_by_get_contract_api() {
 }
 
 #[test]
-fn should_not_revoke_a_contract_except_admins() {
+fn should_require_admin_permission_to_revoke_contracts() {
     let mut service = TestRiscvService::new_restricted();
     let mut ctx = TestContext::default();
 
@@ -328,14 +383,27 @@ fn should_not_revoke_a_contract_except_admins() {
     });
 
     let revoked = service.revoke_contracts(ctx.make(), AddressList {
-        addresses: vec![deployed.address],
+        addresses: vec![deployed.address.clone()],
     });
     assert!(revoked.is_error());
     assert_eq!(revoked.code, ServiceError::NonAuthorized.code());
+
+    let context = ctx.make_admin();
+    let approved = service.revoke_contracts(context.clone(), AddressList {
+        addresses: vec![deployed.address.clone()],
+    });
+    assert!(!approved.is_error());
+    assert_eq!(context.get_events().len(), 1);
+
+    let event: Event<AddressList> = context.get_events()[0].data.parse().expect("parse event");
+    assert_eq!(event.topic, "revoke_contracts");
+    assert_eq!(event.data, AddressList {
+        addresses: vec![deployed.address],
+    });
 }
 
 #[test]
-fn should_not_approve_a_contract_except_admins() {
+fn should_require_admin_permission_to_approve_contracts() {
     let mut service = TestRiscvService::new_restricted();
     let mut ctx = TestContext::default();
 
@@ -348,9 +416,23 @@ fn should_not_approve_a_contract_except_admins() {
     assert_eq!(&deployed.init_ret, "");
 
     let approved = service.approve_contracts(ctx.make(), AddressList {
-        addresses: vec![deployed.address],
+        addresses: vec![deployed.address.clone()],
     });
     assert!(approved.is_error());
+    assert_eq!(approved.code, ServiceError::NonAuthorized.code());
+
+    let context = ctx.make_admin();
+    let approved = service.approve_contracts(context.clone(), AddressList {
+        addresses: vec![deployed.address.clone()],
+    });
+    assert!(!approved.is_error());
+    assert_eq!(context.get_events().len(), 1);
+
+    let event: Event<AddressList> = context.get_events()[0].data.parse().expect("parse event");
+    assert_eq!(event.topic, "approve_contracts");
+    assert_eq!(event.data, AddressList {
+        addresses: vec![deployed.address],
+    });
 }
 
 struct TestRiscvService(

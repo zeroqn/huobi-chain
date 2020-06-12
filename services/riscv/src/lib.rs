@@ -10,20 +10,22 @@ pub mod vm;
 use authorization::Authorization;
 use error::ServiceError;
 use types::{
-    AddressList, Authorizer, Contract, DeployPayload, DeployResp, ExecPayload, GetContractPayload,
-    GetContractResp, InitGenesisPayload,
+    AddressList, Authorizer, Contract, DeployPayload, DeployResp, Event, ExecPayload,
+    GetContractPayload, GetContractResp, InitGenesisPayload,
 };
 use vm::{
     ChainInterface, Interpreter, InterpreterConf, InterpreterParams, ReadonlyChain, WriteableChain,
 };
 
 use binding_macro::{genesis, read, service, write};
-use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK};
-use protocol::types::{Address, Hash, ServiceContext};
-use protocol::Bytes;
+use protocol::{
+    traits::{ExecutorParams, ServiceResponse, ServiceSDK},
+    types::{Address, Hash, ServiceContext},
+    Bytes,
+};
+use serde::Serialize;
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 #[macro_export]
 macro_rules! sub_cycles {
@@ -198,10 +200,14 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         let authorization_mut = &mut self.authorization;
         let auth_kind = authorization::Kind::Deploy;
 
-        for addr in payload.addresses {
+        for addr in payload.addresses.clone() {
             authorization_mut.grant(addr, auth_kind, Authorizer::new(ctx.get_caller()));
         }
-        ServiceResponse::from_succeed(())
+
+        Self::emit_event(&ctx, Event {
+            topic: "grant_deploy_auth".to_owned(),
+            data:  payload,
+        })
     }
 
     #[write]
@@ -213,11 +219,15 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
-        for addr in payload.addresses {
+        for addr in payload.addresses.iter() {
             self.authorization
                 .revoke(&addr, authorization::Kind::Deploy);
         }
-        ServiceResponse::from_succeed(())
+
+        Self::emit_event(&ctx, Event {
+            topic: "revoke_deploy_auth".to_owned(),
+            data:  payload,
+        })
     }
 
     #[write]
@@ -313,7 +323,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         let authorizer = Authorizer::new(ctx.get_caller());
         let auth_kind = authorization::Kind::Contract;
 
-        for address in payload.addresses {
+        for address in payload.addresses.clone() {
             if let Err(e) = self.load_contract(&address) {
                 return e.into();
             };
@@ -322,7 +332,10 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
                 .grant(address, auth_kind, authorizer.clone());
         }
 
-        ServiceResponse::from_succeed(())
+        Self::emit_event(&ctx, Event {
+            topic: "approve_contracts".to_owned(),
+            data:  payload,
+        })
     }
 
     #[write]
@@ -334,7 +347,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
-        for address in payload.addresses {
+        for address in payload.addresses.iter() {
             if let Err(e) = self.load_contract(&address) {
                 return e.into();
             };
@@ -343,7 +356,10 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
                 .revoke(&address, authorization::Kind::Contract);
         }
 
-        ServiceResponse::from_succeed(())
+        Self::emit_event(&ctx, Event {
+            topic: "revoke_contracts".to_owned(),
+            data:  payload,
+        })
     }
 
     fn load_contract(&self, address: &Address) -> Result<Contract, ServiceError> {
@@ -401,6 +417,16 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
             }
             .into(),
             Err(err) => ServiceError::CkbVm(err).into(),
+        }
+    }
+
+    fn emit_event<T: Serialize>(ctx: &ServiceContext, event: T) -> ServiceResponse<()> {
+        match serde_json::to_string(&event) {
+            Err(err) => ServiceError::Serde(err).into(),
+            Ok(json) => {
+                ctx.emit_event(json);
+                ServiceResponse::from_succeed(())
+            }
         }
     }
 }
