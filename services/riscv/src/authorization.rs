@@ -78,11 +78,11 @@ impl Authorization {
     }
 
     pub fn revoke(&mut self, address: &Address, kind: Kind) {
-        self.mut_kind(kind).remove(address);
+        self.kind_mut(kind).remove(address);
     }
 
     pub fn grant(&mut self, address: Address, kind: Kind, authorizer: Authorizer) {
-        self.mut_kind(kind).insert(address, authorizer);
+        self.kind_mut(kind).insert(address, authorizer);
     }
 
     fn kind(&self, kind: Kind) -> &dyn StoreMap<Address, Authorizer> {
@@ -92,7 +92,7 @@ impl Authorization {
         }
     }
 
-    fn mut_kind(&mut self, kind: Kind) -> &mut dyn StoreMap<Address, Authorizer> {
+    fn kind_mut(&mut self, kind: Kind) -> &mut dyn StoreMap<Address, Authorizer> {
         match kind {
             Kind::Deploy => self.deploy_auth.as_mut(),
             Kind::Contract => self.contract_auth.as_mut(),
