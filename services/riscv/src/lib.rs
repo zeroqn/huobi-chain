@@ -34,6 +34,22 @@ macro_rules! sub_cycles {
     };
 }
 
+macro_rules! require_admin {
+    ($authorization:expr, $ctx:expr) => {
+        if !$authorization.is_admin($ctx) {
+            return ServiceError::NonAuthorized.into();
+        }
+    };
+}
+
+macro_rules! require_approved {
+    ($authorization:expr, $contract_address:expr) => {
+        if !$authorization.granted($contract_address, authorization::Kind::Contract) {
+            return ServiceError::NonAuthorized.into();
+        }
+    };
+}
+
 pub struct RiscvService<SDK> {
     sdk:           Rc<RefCell<SDK>>,
     authorization: Authorization,
@@ -56,12 +72,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
     #[read]
     fn call(&self, ctx: ServiceContext, payload: ExecPayload) -> ServiceResponse<String> {
-        if !self
-            .authorization
-            .granted(&payload.address, authorization::Kind::Contract)
-        {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_approved!(self.authorization, &payload.address);
 
         let (contract, code) = match self.load_contract_code(&payload.address) {
             Ok(c) => c,
@@ -159,12 +170,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
 
     #[write]
     fn exec(&mut self, ctx: ServiceContext, payload: ExecPayload) -> ServiceResponse<String> {
-        if !self
-            .authorization
-            .granted(&payload.address, authorization::Kind::Contract)
-        {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_approved!(self.authorization, &payload.address);
 
         let (contract, code) = match self.load_contract_code(&payload.address) {
             Ok(c) => c,
@@ -188,9 +194,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         ctx: ServiceContext,
         payload: AddressList,
     ) -> ServiceResponse<()> {
-        if !self.authorization.is_admin(&ctx) {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         for addr in payload.addresses {
@@ -209,9 +213,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         ctx: ServiceContext,
         payload: AddressList,
     ) -> ServiceResponse<()> {
-        if !self.authorization.is_admin(&ctx) {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         for addr in payload.addresses {
@@ -308,9 +310,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         ctx: ServiceContext,
         payload: AddressList,
     ) -> ServiceResponse<()> {
-        if !self.authorization.is_admin(&ctx) {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         let authorizer = Authorizer::new(ctx.get_caller());
@@ -332,9 +332,7 @@ impl<SDK: ServiceSDK + 'static> RiscvService<SDK> {
         ctx: ServiceContext,
         payload: AddressList,
     ) -> ServiceResponse<()> {
-        if !self.authorization.is_admin(&ctx) {
-            return ServiceError::NonAuthorized.into();
-        }
+        require_admin!(self.authorization, &ctx);
         sub_cycles!(ctx, payload.addresses.len() as u64 * 10_000);
 
         for address in payload.addresses {
