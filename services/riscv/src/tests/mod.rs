@@ -257,9 +257,8 @@ fn should_require_admin_permission_to_revoke_deploy_auth() {
     let mut service = TestRiscvService::new_restricted();
     let mut ctx = TestContext::default();
 
-    let context = ctx.make_admin();
     let caller = Address::from_hex(CALLER).expect("from CALLER");
-    service!(service, grant_deploy_auth, context.clone(), AddressList {
+    service!(service, grant_deploy_auth, ctx.make_admin(), AddressList {
         addresses: vec![caller.clone()],
     });
 
@@ -286,7 +285,7 @@ fn should_require_admin_permission_to_revoke_deploy_auth() {
     let event: Event<AddressList> = context.get_events()[0].data.parse().expect("parse event");
     assert_eq!(event.topic, "revoke_deploy_auth");
     assert_eq!(event.data, AddressList {
-        addresses: vec![caller.clone()],
+        addresses: vec![caller],
     });
 
     let deployed = service.deploy(ctx.make(), DeployPayload {
