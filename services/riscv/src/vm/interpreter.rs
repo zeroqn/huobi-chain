@@ -118,10 +118,11 @@ impl Interpreter {
             )))
             .syscall(Box::new(vm::SyscallIO::new(
                 self.params.args.to_vec(),
-                Rc::<RefCell<_>>::clone(&ret_data),
+                Rc::<_>::clone(&ret_data),
             )))
             .syscall(Box::new(vm::SyscallChainInterface::new(
-                Rc::<RefCell<_>>::clone(&self.chain),
+                Rc::<_>::clone(&self.chain),
+                Rc::<_>::clone(&err_resp),
             )))
             .build();
 

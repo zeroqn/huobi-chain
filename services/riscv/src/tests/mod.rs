@@ -462,8 +462,6 @@ fn should_also_return_assert_message_on_assert_failed() {
     let mut service = TestRiscvService::new();
     let mut ctx = TestContext::default();
 
-    // We use write_read contract, call c() should fail because
-    // read call cannot change state.
     let deployed = service!(service, deploy, ctx.make_admin(), DeployPayload {
         code:      read_code!("src/tests/assert"),
         intp_type: InterpreterType::Binary,
@@ -475,6 +473,18 @@ fn should_also_return_assert_message_on_assert_failed() {
     let called = service.call(ctx.make_admin(), ExecPayload {
         address: deployed.address.clone(),
         args:    format!("a{}", deployed.address.as_hex()),
+    });
+
+    assert!(called.is_error());
+    assert_eq!(
+        called.error_message,
+        "Assert failed: 1 should never bigger than 2"
+    );
+
+    // Contract call assert failed
+    let called = service.call(ctx.make_admin(), ExecPayload {
+        address: deployed.address.clone(),
+        args:    format!("b{}", deployed.address.as_hex()),
     });
 
     assert!(called.is_error());
