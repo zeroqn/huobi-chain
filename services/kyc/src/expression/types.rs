@@ -1,6 +1,4 @@
 use derive_more::Display;
-use std::error::Error;
-
 use protocol::types::Address;
 
 #[derive(Debug, Display)]
@@ -50,34 +48,3 @@ pub enum CalcValue {
     // this value is for the type of Token::Value
     Value(String),
 }
-
-#[derive(Display, Debug, PartialEq)]
-pub enum CalcErr {
-    CalcError(String),
-}
-impl Error for CalcErr {}
-impl Into<KYCError> for CalcErr {
-    fn into(self) -> KYCError {
-        match self {
-            CalcErr::CalcError(str) => KYCError::CalcError(str),
-        }
-    }
-}
-
-pub type CalcResult = Result<CalcValue, CalcErr>;
-
-#[derive(Display, Debug, PartialEq)]
-pub enum KYCError {
-    #[display(fmt = "{}", _0)]
-    ScanError(String),
-
-    #[display(fmt = "{}", _0)]
-    ParseError(String),
-
-    #[display(fmt = "{}", _0)]
-    CalcError(String),
-}
-
-impl Error for KYCError {}
-
-pub type ExpressionResult = Result<bool, KYCError>;

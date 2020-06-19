@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use super::types::{KYCError, Node, Token};
+use crate::expression::{
+    types::{Node, Token},
+    ExpressionError,
+};
 
 const HIGHEST_PRIORITY: u8 = 6u8;
 
@@ -74,14 +77,14 @@ impl Token {
     }
 }
 
-pub fn scan(input: String) -> Result<Vec<Token>, KYCError> {
+pub fn scan(input: String) -> Result<Vec<Token>, ExpressionError> {
     let mut acute = false;
 
     let mut position = Vec::<usize>::new();
     position.push(0);
     for (i, c) in input.chars().enumerate() {
         if !c.is_ascii() {
-            return Err(KYCError::ScanError("not ascii".to_string()));
+            return Err(ExpressionError::ScanError("not ascii".to_string()));
         }
 
         match c {
@@ -103,7 +106,7 @@ pub fn scan(input: String) -> Result<Vec<Token>, KYCError> {
     position.push(input.chars().count());
 
     if acute {
-        return Err(KYCError::ScanError("unclosed acute".to_string()));
+        return Err(ExpressionError::ScanError("unclosed acute".to_string()));
     }
 
     let mut start: usize;
@@ -197,9 +200,8 @@ pub fn scan(input: String) -> Result<Vec<Token>, KYCError> {
 
         prev_token = token_str;
     }
+
     tokens.push(Token::RightParenthesis);
-    println!("tokens:{:?}", tokens);
-    println!("priority_count:{:?}", operator_priority_count_map);
 
     Ok(tokens)
 }
