@@ -5,9 +5,9 @@ use error::ServiceError;
 
 use expression::traits::ExpressionDataFeed;
 use types::{
-    ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, GetUserTags,
-    KycOrgInfo, NoneEmptyVec, OrgName, RegisterNewOrg, TagName, TagString, UpdateOrgSupportTags,
-    UpdateUserTags, Validate,
+    ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, Genesis,
+    GetUserTags, KycOrgInfo, NoneEmptyVec, OrgName, RegisterNewOrg, TagName, TagString,
+    UpdateOrgSupportTags, UpdateUserTags, Validate,
 };
 
 use binding_macro::{cycles, genesis, read, service, write};
@@ -93,6 +93,25 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             user_tag_names,
             user_tags,
         }
+    }
+
+    #[genesis]
+    fn init_genesis(&mut self, genesis: Genesis) {
+        if let Err(e) = genesis.validate() {
+            panic!(e);
+        }
+
+        let org = KycOrgInfo {
+            name:           genesis.org_name.clone(),
+            description:    genesis.description,
+            admin:          genesis.org_admin,
+            supported_tags: genesis.supported_tags,
+            approved:       true,
+        };
+        self.orgs.insert(genesis.org_name.to_owned(), org);
+
+        self.sdk
+            .set_value(KYC_SERVICE_ADMIN_KEY.to_owned(), genesis.service_admin);
     }
 
     // Note: Use Option to provide default value require by ServiceResponse

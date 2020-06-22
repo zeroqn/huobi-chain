@@ -351,6 +351,33 @@ impl<'de> Deserialize<'de> for OrgName {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Genesis {
+    pub org_name:       OrgName,
+    pub description:    String,
+    pub org_admin:      Address,
+    pub supported_tags: Vec<TagName>,
+    pub service_admin:  Address,
+}
+
+impl Validate for Genesis {
+    fn validate(&self) -> Result<(), ServiceError> {
+        if self.description.len() >= 256 {
+            return Err(BadPayload("description length exceed 256").into());
+        }
+
+        if self.org_admin == Address::default() {
+            return Err(BadPayload("invalid org admin address").into());
+        }
+
+        if self.service_admin == Address::default() {
+            return Err(BadPayload("invalid service admin address").into());
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, RlpFixedCodec)]
 pub struct KycOrgInfo {
     pub name:           OrgName,
