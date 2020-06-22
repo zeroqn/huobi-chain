@@ -335,6 +335,14 @@ impl<SDK: ServiceSDK> KycService<SDK> {
     ) -> ServiceResponse<()> {
         require_org_exists!(self, payload.org_name);
 
+        if !self
+            .orgs_approved
+            .get(&payload.org_name)
+            .unwrap_or_else(|| false)
+        {
+            return ServiceError::UnapprovedOrg.into();
+        }
+
         // Impossible, already checked by require_org_exists!()
         let org = self.orgs.get(&payload.org_name).unwrap();
         if org.admin != ctx.get_caller() {

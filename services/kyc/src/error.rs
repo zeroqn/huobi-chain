@@ -25,6 +25,9 @@ pub enum ServiceError {
 
     #[display(fmt = "Expression {}", _0)]
     Expression(ExpressionError),
+
+    #[display(fmt = "Unapproved org")]
+    UnapprovedOrg,
 }
 
 impl ServiceError {
@@ -39,6 +42,7 @@ impl ServiceError {
             OrgAlreadyExists => 105,
             OutOfCycles => 106,
             Expression(_) => 107,
+            UnapprovedOrg => 108,
         }
     }
 }
