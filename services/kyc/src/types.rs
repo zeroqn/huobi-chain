@@ -141,6 +141,12 @@ impl DerefMut for TagString {
     }
 }
 
+impl Into<String> for TagString {
+    fn into(self) -> String {
+        self.0
+    }
+}
+
 pub type TagName = TagString;
 
 #[derive(Debug, Serialize, PartialEq, Eq, Clone)]
@@ -160,6 +166,15 @@ impl<T: Validated> NoneEmptyVec<T> {
 impl<T: Validated> Into<Vec<T>> for NoneEmptyVec<T> {
     fn into(self) -> Vec<T> {
         self.0
+    }
+}
+
+impl<T: Validated> IntoIterator for NoneEmptyVec<T> {
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type Item = T;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 

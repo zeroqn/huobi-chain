@@ -377,8 +377,21 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 }
 
 impl<SDK: ServiceSDK> ExpressionDataFeed for KycService<SDK> {
-    fn get_tags(&self, target_address: Address, kyc: String, tag: String) -> Vec<String> {
-        println!("get_tags:{}:{}.{}", target_address.as_hex(), kyc, tag);
-        vec!["KYC.TAG".to_string()]
+    fn get_tags(
+        &self,
+        user: Address,
+        kyc: String,
+        tag: String,
+    ) -> Result<Vec<String>, &'static str> {
+        let org_name = kyc.parse()?;
+        let tag_name = tag.parse()?;
+
+        let user_tags_key = UserTagsKey::new(org_name, user, tag_name);
+        let tags = match self.user_tags.get(&user_tags_key) {
+            Some(tags) => tags.into_iter().map(Into::into).collect(),
+            None => vec!["NULL".to_owned()],
+        };
+
+        Ok(tags)
     }
 }

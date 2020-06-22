@@ -80,11 +80,12 @@ impl<'a, DF: ExpressionDataFeed> CalcContext<'a, DF> {
         };
 
         // todo, calc KYC.TAG
-        Ok(CalcValue::KycTag(self.data_feeder.get_tags(
-            self.target_address.clone(),
-            left,
-            right,
-        )))
+        let tags = self
+            .data_feeder
+            .get_tags(self.target_address.clone(), left, right)
+            .map_err(CalcError)?;
+
+        Ok(CalcValue::KycTag(tags))
     }
 
     fn calc_has(&self, has_node: &Node) -> CalcResult {
