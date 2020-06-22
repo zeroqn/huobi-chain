@@ -413,6 +413,10 @@ impl<SDK: ServiceSDK> ExpressionDataFeed for KycService<SDK> {
         let org_name = kyc.parse()?;
         let tag_name = tag.parse()?;
 
+        if !self.orgs_approved.get(&org_name).unwrap_or_else(|| false) {
+            return Err("unapproved org");
+        }
+
         let user_tags_key = UserTagsKey::new(org_name, user, tag_name);
         let tags = match self.user_tags.get(&user_tags_key) {
             Some(tags) => tags.into_iter().map(Into::into).collect(),
