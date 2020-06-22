@@ -1921,7 +1921,11 @@ dependencies = [
  "derive_more 0.99.7",
  "framework",
  "muta",
+ "muta-codec-derive",
  "muta-protocol",
+ "rlp 0.4.5",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
