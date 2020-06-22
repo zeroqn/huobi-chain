@@ -350,15 +350,15 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         }
 
         // Update tag_names
-        let maybe_tag_names = {
+        let opt_tag_names = {
             let tag_names = payload.tags.keys().cloned().collect::<Vec<TagName>>();
-            NoneEmptyVec::from_vec(tag_names)
+            NoneEmptyVec::from_vec(tag_names).ok()
         };
         let tag_names_key = UserTagNamesKey::new(payload.org_name.clone(), payload.user.clone());
 
-        let tag_names = match maybe_tag_names {
-            Ok(names) => names,
-            Err(e) => {
+        let tag_names = match opt_tag_names {
+            Some(names) => names,
+            None => {
                 self.user_tag_names.remove(&tag_names_key);
 
                 return Self::emit_event(&ctx, Event {
