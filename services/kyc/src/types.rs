@@ -198,10 +198,6 @@ impl NoneEmptyVec<TagString> {
             return Err("tag array is empty");
         }
 
-        if tags.len() > 6 {
-            return Err("tag array length exceed 6");
-        }
-
         Ok(())
     }
 }
@@ -380,9 +376,108 @@ impl Validate for KycOrgInfo {
     }
 }
 
+#[derive(Debug, Serialize, Clone)]
+pub struct FixedTagList(NoneEmptyVec<TagString>);
+
+impl FixedTagList {
+    pub fn from_vec(tags: Vec<TagString>) -> Result<Self, &'static str> {
+        Self::validate(&tags)?;
+
+        Ok(FixedTagList(NoneEmptyVec(tags)))
+    }
+
+    pub fn validate(tags: &Vec<TagString>) -> Result<(), &'static str> {
+        NoneEmptyVec::validate(tags)?;
+
+        if tags.len() > 6 {
+            return Err("tag array length exceed 6");
+        }
+
+        Ok(())
+    }
+}
+
+impl FixedCodec for FixedTagList {
+    fn encode_fixed(&self) -> ProtocolResult<Bytes> {
+        self.0.encode_fixed()
+    }
+
+    fn decode_fixed(bytes: Bytes) -> ProtocolResult<Self> {
+        let tags = NoneEmptyVec::decode_fixed(bytes)?;
+
+        FixedTagList::validate(&tags)
+            .map_err(rlp::DecoderError::Custom)
+            .map_err(FixedCodecError::from)?;
+
+        Ok(FixedTagList(tags))
+    }
+}
+
+impl<'de> Deserialize<'de> for FixedTagList {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct TagVisitor;
+
+        impl<'de> Visitor<'de> for TagVisitor {
+            type Value = FixedTagList;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("tag array")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: SeqAccess<'de>,
+            {
+                let mut vec = Vec::new();
+
+                while let Some(elem) = seq.next_element::<Option<TagString>>()? {
+                    vec.extend(elem);
+                }
+
+                let tags = FixedTagList::from_vec(vec).map_err(A::Error::custom)?;
+                Ok(tags)
+            }
+        }
+
+        deserializer.deserialize_seq(TagVisitor)
+    }
+}
+
+impl Into<Vec<String>> for FixedTagList {
+    fn into(self) -> Vec<String> {
+        self.0.into_iter().map(Into::into).collect()
+    }
+}
+
+impl Deref for FixedTagList {
+    type Target = NoneEmptyVec<TagString>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for FixedTagList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl IntoIterator for FixedTagList {
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type Item = TagString;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct KycUserInfo {
-    pub tags: HashMap<TagName, NoneEmptyVec<TagString>>,
+    pub tags: HashMap<TagName, FixedTagList>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -423,7 +518,7 @@ pub struct UpdateOrgSupportTags {
 pub struct UpdateUserTags {
     pub org_name: OrgName,
     pub user:     Address,
-    pub tags:     HashMap<TagName, NoneEmptyVec<TagString>>,
+    pub tags:     HashMap<TagName, FixedTagList>,
 }
 
 impl Validate for UpdateUserTags {

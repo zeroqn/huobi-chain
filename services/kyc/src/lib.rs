@@ -5,8 +5,8 @@ use error::ServiceError;
 
 use expression::traits::ExpressionDataFeed;
 use types::{
-    ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, GetUserTags, KycOrgInfo,
-    NoneEmptyVec, OrgName, RegisterNewOrg, TagName, TagString, UpdateOrgSupportTags,
+    ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, GetUserTags,
+    KycOrgInfo, NoneEmptyVec, OrgName, RegisterNewOrg, TagName, TagString, UpdateOrgSupportTags,
     UpdateUserTags, Validate,
 };
 
@@ -75,7 +75,7 @@ pub struct KycService<SDK> {
     orgs:           Box<dyn StoreMap<OrgName, KycOrgInfo>>,
     orgs_approved:  Box<dyn StoreMap<OrgName, bool>>,
     user_tag_names: Box<dyn StoreMap<UserTagNamesKey, NoneEmptyVec<TagName>>>,
-    user_tags:      Box<dyn StoreMap<UserTagsKey, NoneEmptyVec<TagString>>>,
+    user_tags:      Box<dyn StoreMap<UserTagsKey, FixedTagList>>,
 }
 
 #[service]
@@ -132,7 +132,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         &self,
         ctx: ServiceContext,
         payload: GetUserTags,
-    ) -> ServiceResponse<HashMap<TagName, NoneEmptyVec<TagString>>> {
+    ) -> ServiceResponse<HashMap<TagName, FixedTagList>> {
         if let Err(e) = payload.validate() {
             return e.into();
         }
