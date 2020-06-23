@@ -150,12 +150,14 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
         for (org_name, _) in self.orgs_approved.iter() {
             let required_cycles = org_name.len() * 10_000;
-            sub_cycles!(ctx, required_cycles as u64);
+            if !ctx.sub_cycles(required_cycles as u64) {
+                return ServiceError::OutOfCycles.into();
+            }
 
             org_names.push(org_name);
         }
 
-        ServiceResponse::from_succeed(org_names);
+        ServiceResponse::from_succeed(org_names)
     }
 
     // Note: Use Option to provide default value require by ServiceResponse
