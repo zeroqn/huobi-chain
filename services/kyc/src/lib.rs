@@ -149,8 +149,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         let mut org_names = Vec::new();
 
         for (org_name, _) in self.orgs_approved.iter() {
-            let required_cycles = org_name.len() * 10_000;
-            if !ctx.sub_cycles(required_cycles as u64) {
+            if !ctx.sub_cycles(10_000u64) {
                 return ServiceError::OutOfCycles.into();
             }
 
