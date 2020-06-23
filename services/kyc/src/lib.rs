@@ -6,8 +6,8 @@ use error::ServiceError;
 use expression::traits::ExpressionDataFeed;
 use types::{
     ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, Genesis,
-    GetUserTags, KycOrgInfo, NoneEmptyVec, OrgName, RegisterNewOrg, TagName, TagString,
-    UpdateOrgSupportTags, UpdateUserTags, Validate,
+    GetUserTags, KycOrgInfo, OrgName, RegisterNewOrg, TagName, TagString, UpdateOrgSupportTags,
+    UpdateUserTags, Validate,
 };
 
 use binding_macro::{cycles, genesis, read, service, write};
@@ -21,7 +21,10 @@ use protocol::{
 };
 use serde::Serialize;
 
-use std::collections::HashMap;
+use std::{
+    collections::{HashMap, HashSet},
+    ops::{Deref, DerefMut},
+};
 
 const KYC_SERVICE_ADMIN_KEY: &str = "kyc_service_admin";
 
@@ -68,13 +71,38 @@ struct UserTagsKey {
     tag_name: TagName,
 }
 
-// NOTE: update_user_tags will not remove old tags. Must check user_tag_names
-// before access user_tags.
+#[derive(Debug, PartialEq, Eq, RlpFixedCodec)]
+struct TagNameList(Vec<TagName>);
+
+impl IntoIterator for TagNameList {
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    type Item = TagName;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+// Required for RlpFixedCodec derive
+impl Deref for TagNameList {
+    type Target = Vec<TagName>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for TagNameList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 pub struct KycService<SDK> {
     sdk:            SDK,
     orgs:           Box<dyn StoreMap<OrgName, KycOrgInfo>>,
     orgs_approved:  Box<dyn StoreMap<OrgName, bool>>,
-    user_tag_names: Box<dyn StoreMap<UserTagNamesKey, NoneEmptyVec<TagName>>>,
+    user_tag_names: Box<dyn StoreMap<UserTagNamesKey, TagNameList>>,
     user_tags:      Box<dyn StoreMap<UserTagsKey, FixedTagList>>,
 }
 
@@ -160,7 +188,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
         let tag_names_key = UserTagNamesKey::new(payload.org_name.clone(), payload.user.clone());
         let tag_names: Vec<TagName> = match self.user_tag_names.get(&tag_names_key) {
-            Some(names) => names.into(),
+            Some(names) => names.0,
             None => return ServiceResponse::from_succeed(HashMap::new()),
         };
 
@@ -349,32 +377,26 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             return ServiceError::NonAuthorized.into();
         }
 
-        // Update tag_names
-        let opt_tag_names = {
-            let tag_names = payload.tags.keys().cloned().collect::<Vec<TagName>>();
-            NoneEmptyVec::from_vec(tag_names).ok()
-        };
+        // Update tags
         let tag_names_key = UserTagNamesKey::new(payload.org_name.clone(), payload.user.clone());
 
-        let tag_names = match opt_tag_names {
-            Some(names) => names,
-            None => {
-                self.user_tag_names.remove(&tag_names_key);
+        let tag_names = TagNameList(payload.tags.keys().cloned().collect::<Vec<_>>());
+        if tag_names.len() > 0 {
+            let required_cycles = tag_names.len() * 10_000;
+            sub_cycles!(ctx, required_cycles as u64);
+        }
 
-                return Self::emit_event(&ctx, Event {
-                    topic: "update_user_tags".to_owned(),
-                    data:  payload,
-                });
-            }
-        };
-
-        let required_cycles = tag_names.len() * 10_000;
-        sub_cycles!(ctx, required_cycles as u64);
+        let mut old_tag_names = self
+            .user_tag_names
+            .get(&tag_names_key)
+            .map(|v| v.into_iter().collect::<HashSet<_>>())
+            .unwrap_or_else(|| HashSet::new());
 
         self.user_tag_names.insert(tag_names_key, tag_names);
 
-        // Update tags
         for (tag_name, tags) in payload.tags.iter() {
+            old_tag_names.remove(&tag_name);
+
             let required_cycles = tags.len() * 10_000;
             sub_cycles!(ctx, required_cycles as u64);
 
@@ -384,6 +406,13 @@ impl<SDK: ServiceSDK> KycService<SDK> {
                 tag_name.to_owned(),
             );
             self.user_tags.insert(tags_key, tags.to_owned());
+        }
+
+        // Clear unused tags
+        for tag_name in old_tag_names.into_iter() {
+            let tags_key =
+                UserTagsKey::new(payload.org_name.clone(), payload.user.clone(), tag_name);
+            self.user_tags.remove(&tags_key);
         }
 
         Self::emit_event(&ctx, Event {
