@@ -142,6 +142,21 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             .set_value(KYC_SERVICE_ADMIN_KEY.to_owned(), genesis.service_admin);
     }
 
+    #[cycles(21_000)]
+    #[read]
+    fn list_kyc_orgs(&self, ctx: ServiceContext) -> ServiceResponse<Vec<OrgName>> {
+        let mut org_names = Vec::new();
+
+        for (org_name, _) in self.orgs_approved.iter() {
+            let required_cycles = org_name.len() * 10_000;
+            sub_cycles!(ctx, required_cycles as u64);
+
+            org_names.push(org_name);
+        }
+
+        ServiceResponse::from_succeed(org_names);
+    }
+
     // Note: Use Option to provide default value require by ServiceResponse
     #[cycles(21_000)]
     #[read]
@@ -315,6 +330,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         };
 
         self.orgs.insert(new_org.name.to_owned(), org);
+        self.orgs_approved.insert(new_org.name.to_owned(), false);
 
         #[derive(Debug, Serialize)]
         struct NewOrgEvent {
