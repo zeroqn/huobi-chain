@@ -353,16 +353,16 @@ impl<'de> Deserialize<'de> for OrgName {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Genesis {
-    pub org_name:       OrgName,
-    pub description:    String,
-    pub org_admin:      Address,
-    pub supported_tags: Vec<TagName>,
-    pub service_admin:  Address,
+    pub org_name:        OrgName,
+    pub org_description: String,
+    pub org_admin:       Address,
+    pub supported_tags:  Vec<TagName>,
+    pub service_admin:   Address,
 }
 
 impl Validate for Genesis {
     fn validate(&self) -> Result<(), ServiceError> {
-        if self.description.len() >= 256 {
+        if self.org_description.len() >= 256 {
             return Err(BadPayload("description length exceed 256").into());
         }
 

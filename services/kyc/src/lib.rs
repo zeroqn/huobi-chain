@@ -131,7 +131,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
         let org = KycOrgInfo {
             name:           genesis.org_name.clone(),
-            description:    genesis.description,
+            description:    genesis.org_description,
             admin:          genesis.org_admin,
             supported_tags: genesis.supported_tags,
             approved:       true,
