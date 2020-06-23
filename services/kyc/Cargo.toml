@@ -13,4 +13,4 @@ protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.1.2-beta2"
 binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.1.2-beta2" }
 
 [dev-dependencies]
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.1.2-beta2"}
+framework = { git = "https://github.com/zeroqn/muta", branch = "feat-network-multi-proto-streams" }
