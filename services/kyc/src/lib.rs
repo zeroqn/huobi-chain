@@ -137,6 +137,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             approved:       true,
         };
         self.orgs.insert(genesis.org_name.to_owned(), org);
+        self.orgs_approved.insert(genesis.org_name.to_owned(), true);
 
         self.sdk
             .set_value(KYC_SERVICE_ADMIN_KEY.to_owned(), genesis.service_admin);
