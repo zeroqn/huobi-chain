@@ -271,7 +271,11 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn change_key_admin(&mut self, ctx: ServiceContext, new_admin: Address) -> ServiceResponse<()> {
+    fn change_service_admin(
+        &mut self,
+        ctx: ServiceContext,
+        new_admin: Address,
+    ) -> ServiceResponse<()> {
         require_service_admin!(self, &ctx);
 
         self.sdk
