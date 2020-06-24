@@ -513,7 +513,7 @@ pub struct ChangeOrgApproved {
     pub approved: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RegisterNewOrg {
     pub name:           OrgName,
     pub description:    String,
@@ -533,6 +533,12 @@ impl Validate for RegisterNewOrg {
 
         Ok(())
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NewOrgEvent {
+    pub name:           OrgName,
+    pub supported_tags: Vec<TagString>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

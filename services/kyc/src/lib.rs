@@ -1,5 +1,7 @@
 mod error;
 mod expression;
+#[cfg(test)]
+mod tests;
 mod types;
 use error::ServiceError;
 
