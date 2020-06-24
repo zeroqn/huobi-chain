@@ -456,7 +456,7 @@ fn should_report_not_found_error_for_none_exists_org_on_update_user_tags() {
     let mut kyc = TestService::new();
     let ctx = mock_context(TestService::li_bing());
 
-    let updated = kyc.update_user_tags(ctx.clone(), UpdateUserTags {
+    let updated = kyc.update_user_tags(ctx, UpdateUserTags {
         org_name: "JinYiWei".parse().unwrap(),
         user:     TestService::chen_ten(),
         tags:     HashMap::new(),
@@ -485,7 +485,7 @@ fn should_reject_unapproved_org_to_update_user_tags() {
     };
 
     service_call!(kyc, register_org, ctx.clone(), org.clone());
-    let opt_registered = service_call!(kyc, get_org_info, ctx.clone(), org.name.clone());
+    let opt_registered = service_call!(kyc, get_org_info, ctx, org.name);
     assert_eq!(opt_registered.as_ref().map(|o| o.approved), Some(false));
 
     let ctx = mock_context(TestService::li_bing());
@@ -630,11 +630,11 @@ fn should_eval_user_tag_expression() {
     );
 
     let update_user_tags = UpdateUserTags {
-        org_name: genesis.org_name.clone(),
-        user:     TestService::chen_ten(),
-        tags:     tags.clone(),
+        org_name: genesis.org_name,
+        user: TestService::chen_ten(),
+        tags,
     };
-    service_call!(kyc, update_user_tags, ctx.clone(), update_user_tags.clone());
+    service_call!(kyc, update_user_tags, ctx.clone(), update_user_tags);
 
     let evaluated = kyc.eval_user_tag_expression(ctx.clone(), EvalUserTagExpression {
         user:       TestService::chen_ten(),
