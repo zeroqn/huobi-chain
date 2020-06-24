@@ -373,6 +373,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         // Impossible, already checked by require_org_exists!()
         let mut org = self.orgs.get(&payload.org_name).unwrap();
         org.supported_tags = payload.supported_tags.clone();
+        self.orgs.insert(payload.org_name.clone(), org);
 
         Self::emit_event(&ctx, Event {
             topic: "update_supported_tags".to_owned(),
