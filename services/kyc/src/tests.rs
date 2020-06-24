@@ -320,12 +320,7 @@ fn should_update_org_supported_tags() {
     );
     assert_eq!(ctx.get_cycles_used(), 21_000 + 10_000);
 
-    let tag_names = service_call!(
-        kyc,
-        get_org_supported_tags,
-        ctx.clone(),
-        genesis.org_name.clone()
-    );
+    let tag_names = service_call!(kyc, get_org_supported_tags, ctx, genesis.org_name);
     assert_eq!(tag_names, vec!["level1".parse().expect("level1")]);
 }
 
@@ -335,8 +330,8 @@ fn should_reject_update_org_supported_tags_without_admin_permission() {
     let ctx = mock_context(TestService::li_bing());
 
     let genesis = TestService::genesis();
-    let updated = kyc.update_supported_tags(ctx.clone(), UpdateOrgSupportTags {
-        org_name:       genesis.org_name.clone(),
+    let updated = kyc.update_supported_tags(ctx, UpdateOrgSupportTags {
+        org_name:       genesis.org_name,
         supported_tags: vec!["level1".parse().expect("level1")],
     });
 
@@ -352,7 +347,7 @@ fn should_report_not_found_error_for_none_exists_org_on_update_org_supported_tag
     let mut kyc = TestService::new();
     let ctx = mock_context(TestService::service_admin());
 
-    let updated = kyc.update_supported_tags(ctx.clone(), UpdateOrgSupportTags {
+    let updated = kyc.update_supported_tags(ctx, UpdateOrgSupportTags {
         org_name:       "JinYiWei".parse().expect("JinYiWei"),
         supported_tags: vec!["level1".parse().expect("level1")],
     });
@@ -398,7 +393,7 @@ fn should_update_user_tags() {
     assert_eq!(event.topic, "update_user_tags");
     assert_eq!(event.data, update_user_tags);
 
-    let updated_tags = service_call!(kyc, get_user_tags, ctx.clone(), GetUserTags {
+    let updated_tags = service_call!(kyc, get_user_tags, ctx, GetUserTags {
         org_name: genesis.org_name,
         user:     TestService::chen_ten(),
     });
@@ -442,7 +437,7 @@ fn should_remove_unused_previous_user_tags_after_update_user_tags() {
         tags:     tags.clone(),
     });
 
-    let updated_tags = service_call!(kyc, get_user_tags, ctx.clone(), GetUserTags {
+    let updated_tags = service_call!(kyc, get_user_tags, ctx, GetUserTags {
         org_name: genesis.org_name.clone(),
         user:     TestService::chen_ten(),
     });
@@ -494,7 +489,7 @@ fn should_reject_unapproved_org_to_update_user_tags() {
     assert_eq!(opt_registered.as_ref().map(|o| o.approved), Some(false));
 
     let ctx = mock_context(TestService::li_bing());
-    let updated = kyc.update_user_tags(ctx.clone(), UpdateUserTags {
+    let updated = kyc.update_user_tags(ctx, UpdateUserTags {
         org_name: "Guan8Train".parse().unwrap(),
         user:     TestService::li_bing(),
         tags:     HashMap::new(),
@@ -520,9 +515,9 @@ fn should_reject_update_user_tags_from_none_org_admin() {
     );
 
     let updated = kyc.update_user_tags(ctx, UpdateUserTags {
-        org_name: genesis.org_name.clone(),
-        user:     TestService::chen_ten(),
-        tags:     tags.clone(),
+        org_name: genesis.org_name,
+        user: TestService::chen_ten(),
+        tags,
     });
 
     assert!(updated.is_error());
@@ -582,7 +577,7 @@ fn should_reject_to_approve_org_from_none_service_admin() {
         ],
     };
 
-    service_call!(kyc, register_org, ctx.clone(), org.clone());
+    service_call!(kyc, register_org, ctx, org.clone());
 
     let ctx = mock_context(TestService::li_bing());
     let approved = kyc.change_org_approved(ctx, ChangeOrgApproved {
@@ -649,7 +644,7 @@ fn should_eval_user_tag_expression() {
     assert!(!evaluated.is_error());
     assert_eq!(evaluated.succeed_data, true);
 
-    let evaluated = kyc.eval_user_tag_expression(ctx.clone(), EvalUserTagExpression {
+    let evaluated = kyc.eval_user_tag_expression(ctx, EvalUserTagExpression {
         user:       TestService::chen_ten(),
         expression: "Da_Lisi.speci@`Cat`".to_owned(),
     });

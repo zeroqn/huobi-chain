@@ -183,7 +183,7 @@ impl<T: Validated> DerefMut for NoneEmptyVec<T> {
 }
 
 impl NoneEmptyVec<TagString> {
-    pub fn validate(tags: &Vec<TagString>) -> Result<(), &'static str> {
+    pub fn validate(tags: &[TagString]) -> Result<(), &'static str> {
         if tags.is_empty() {
             return Err("tag array is empty");
         }
@@ -403,7 +403,7 @@ impl FixedTagList {
         Ok(FixedTagList(NoneEmptyVec(tags)))
     }
 
-    pub fn validate(tags: &Vec<TagString>) -> Result<(), &'static str> {
+    pub fn validate(tags: &[TagString]) -> Result<(), &'static str> {
         NoneEmptyVec::validate(tags)?;
 
         if tags.len() > 6 {
