@@ -193,7 +193,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         let required_cycles = org.supported_tags.len() as u64 * 10_000;
         sub_cycles!(ctx, required_cycles);
 
-        ServiceResponse::from_succeed(org.supported_tags.into())
+        ServiceResponse::from_succeed(org.supported_tags)
     }
 
     #[cycles(21_000)]
@@ -417,7 +417,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             .user_tag_names
             .get(&tag_names_key)
             .map(|v| v.into_iter().collect::<HashSet<_>>())
-            .unwrap_or_else(|| HashSet::new());
+            .unwrap_or_else(HashSet::new);
 
         self.user_tag_names.insert(tag_names_key, tag_names);
 
