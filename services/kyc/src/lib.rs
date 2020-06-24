@@ -187,6 +187,10 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
         // Impossible, already ensure org exists
         let org = self.orgs.get(&org_name).unwrap();
+
+        let required_cycles = org.supported_tags.len() as u64 * 10_000;
+        sub_cycles!(ctx, required_cycles);
+
         ServiceResponse::from_succeed(org.supported_tags.into())
     }
 
