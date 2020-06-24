@@ -6,8 +6,8 @@ use error::ServiceError;
 use expression::traits::ExpressionDataFeed;
 use types::{
     ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, Genesis,
-    GetUserTags, KycOrgInfo, OrgName, RegisterNewOrg, TagName, TagString, UpdateOrgSupportTags,
-    UpdateUserTags, Validate,
+    GetUserTags, KycOrgInfo, NewOrgEvent, OrgName, RegisterNewOrg, TagName, TagString,
+    UpdateOrgSupportTags, UpdateUserTags, Validate,
 };
 
 use binding_macro::{cycles, genesis, read, service, write};
@@ -312,7 +312,11 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn register(&mut self, ctx: ServiceContext, new_org: RegisterNewOrg) -> ServiceResponse<()> {
+    fn register_org(
+        &mut self,
+        ctx: ServiceContext,
+        new_org: RegisterNewOrg,
+    ) -> ServiceResponse<()> {
         require_service_admin!(self, &ctx);
 
         if let Err(e) = new_org.validate() {
@@ -342,14 +346,8 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         self.orgs.insert(new_org.name.to_owned(), org);
         self.orgs_approved.insert(new_org.name.to_owned(), false);
 
-        #[derive(Debug, Serialize)]
-        struct NewOrgEvent {
-            name:           OrgName,
-            supported_tags: Vec<TagString>,
-        }
-
         Self::emit_event(&ctx, Event {
-            topic: "register".to_owned(),
+            topic: "register_org".to_owned(),
             data:  NewOrgEvent {
                 name:           new_org.name,
                 supported_tags: new_org.supported_tags,
