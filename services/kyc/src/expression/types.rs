@@ -7,8 +7,8 @@ pub enum Token {
     LeftParenthesis,
     #[display(fmt = "RightParenthesis")]
     RightParenthesis,
-    #[display(fmt = "Whitespace")]
-    Whitespace,
+    // #[display(fmt = "Whitespace")]
+    // Whitespace,
     #[display(fmt = "And")]
     And,
     #[display(fmt = "Or")]
@@ -19,8 +19,8 @@ pub enum Token {
     Dot,
     #[display(fmt = "Has")]
     Has,
-    #[display(fmt = "Acute")]
-    Acute,
+    // #[display(fmt = "Acute")]
+    // Acute,
     #[display(fmt = "Value{}", _0)]
     Value(String),
     #[display(fmt = "Identifier{}", _0)]

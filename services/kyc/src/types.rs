@@ -153,16 +153,6 @@ pub type TagName = TagString;
 #[serde(deny_unknown_fields)]
 pub struct NoneEmptyVec<T: Validated>(Vec<T>);
 
-impl<T: Validated> NoneEmptyVec<T> {
-    pub fn from_vec(vec: Vec<T>) -> Result<Self, &'static str> {
-        if vec.is_empty() {
-            Err("create NoneEmptyVec from empty vec")
-        } else {
-            Ok(NoneEmptyVec(vec))
-        }
-    }
-}
-
 impl<T: Validated> Into<Vec<T>> for NoneEmptyVec<T> {
     fn into(self) -> Vec<T> {
         self.0

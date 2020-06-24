@@ -35,7 +35,6 @@ impl Token {
             Token::Or => 1,
             Token::Value(_) => 0,
             Token::Identifier(_) => 0,
-            _ => unreachable!(),
         }
     }
 
@@ -58,13 +57,13 @@ impl Token {
     }
 
     // true for left
-    pub fn get_associativity(&self) -> bool {
-        match self {
-            Token::Dot | Token::Has | Token::And | Token::Or => true,
-            Token::Not => false,
-            _ => unreachable!(),
-        }
-    }
+    // pub fn get_associativity(&self) -> bool {
+    //     match self {
+    //         Token::Dot | Token::Has | Token::And | Token::Or => true,
+    //         Token::Not => false,
+    //         _ => unreachable!(),
+    //     }
+    // }
 
     // 1 for left, 2 for right, 0 for error
     pub fn get_associativity_by_priority(priority: u8) -> u8 {

@@ -8,11 +8,11 @@ use error::ServiceError;
 use expression::traits::ExpressionDataFeed;
 use types::{
     ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, Genesis,
-    GetUserTags, KycOrgInfo, NewOrgEvent, OrgName, RegisterNewOrg, TagName, TagString,
-    UpdateOrgSupportTags, UpdateUserTags, Validate,
+    GetUserTags, KycOrgInfo, NewOrgEvent, OrgName, RegisterNewOrg, TagName, UpdateOrgSupportTags,
+    UpdateUserTags, Validate,
 };
 
-use binding_macro::{cycles, genesis, read, service, write};
+use binding_macro::{cycles, genesis, service};
 use derive_more::Constructor;
 use muta_codec_derive::RlpFixedCodec;
 use protocol::{

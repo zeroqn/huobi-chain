@@ -81,6 +81,7 @@ pub fn validate_values_query(kyc_tag_values: Vec<String>) -> bool {
 // empty is not acceptable
 // len > 6 is not acceptable
 // can not contain NULL
+#[allow(dead_code)]
 pub fn validate_values_update(kyc_tag_values: Vec<String>) -> bool {
     let len = kyc_tag_values.len();
 
