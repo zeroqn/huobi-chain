@@ -1,6 +1,9 @@
 use crate::{
-    types::{ChangeOrgAdmin, Event, Genesis, NewOrgEvent, OrgName, RegisterNewOrg, Validate},
-    KycService, ServiceError,
+    types::{
+        ChangeOrgAdmin, ChangeOrgApproved, EvalUserTagExpression, Event, FixedTagList, Genesis,
+        GetUserTags, NewOrgEvent, OrgName, RegisterNewOrg, TagName, UpdateUserTags, Validate,
+    },
+    ExpressionDataFeed, KycService, ServiceError, UpdateOrgSupportTags,
 };
 
 use cita_trie::MemoryDB;
@@ -11,11 +14,12 @@ use framework::binding::{
 };
 use protocol::{
     traits::NoopDispatcher,
-    types::{Address, Bytes, Hash, Hex, ServiceContext, ServiceContextParams},
+    types::{Address, ServiceContext, ServiceContextParams},
 };
 
 use std::{
     cell::RefCell,
+    collections::HashMap,
     ops::{Deref, DerefMut},
     rc::Rc,
     sync::Arc,
@@ -102,7 +106,7 @@ fn should_cost_10_000_cycles_per_name_on_get_orgs() {
 }
 
 #[test]
-fn should_retrieve_org_info_from_get_org_info() {
+fn should_retrieve_org_info() {
     let kyc = TestService::new();
     let ctx = mock_context(TestService::service_admin());
 
@@ -120,14 +124,17 @@ fn should_retrieve_org_info_from_get_org_info() {
 }
 
 #[test]
-fn should_report_not_found_error_from_get_org_info_using_non_exists_org() {
+fn should_report_not_found_error_when_retrieve_none_exists_org_info() {
     let kyc = TestService::new();
     let ctx = mock_context(TestService::service_admin());
 
     let got = kyc.get_org_info(ctx.clone(), "JinYiWei".parse().expect("JinYiWei"));
 
     assert!(got.is_error());
-    assert_eq!(got.error_message, "Kyc org JinYiWei not found");
+    assert_eq!(
+        got.error_message,
+        ServiceError::OrgNotFound("JinYiWei".parse().unwrap()).to_string()
+    );
     assert_eq!(ctx.get_cycles_used(), 21_000);
 }
 
@@ -152,7 +159,7 @@ fn should_retrieve_org_supported_tags() {
 }
 
 #[test]
-fn should_report_not_found_error_from_get_org_supported_tags_using_none_exists_org() {
+fn should_report_not_found_error_when_retrieve_none_exists_org_supported_tags() {
     let kyc = TestService::new();
     let ctx = mock_context(TestService::service_admin());
 
@@ -296,6 +303,360 @@ fn should_reject_already_exists_org_to_register_again() {
     assert_eq!(ctx.get_cycles_used(), 21_000);
 }
 
+#[test]
+fn should_update_org_supported_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::service_admin());
+
+    let genesis = TestService::genesis();
+    service_call!(
+        kyc,
+        update_supported_tags,
+        ctx.clone(),
+        UpdateOrgSupportTags {
+            org_name:       genesis.org_name.clone(),
+            supported_tags: vec!["level1".parse().expect("level1")],
+        }
+    );
+    assert_eq!(ctx.get_cycles_used(), 21_000 + 10_000);
+
+    let tag_names = service_call!(
+        kyc,
+        get_org_supported_tags,
+        ctx.clone(),
+        genesis.org_name.clone()
+    );
+    assert_eq!(tag_names, vec!["level1".parse().expect("level1")]);
+}
+
+#[test]
+fn should_reject_update_org_supported_tags_without_admin_permission() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let genesis = TestService::genesis();
+    let updated = kyc.update_supported_tags(ctx.clone(), UpdateOrgSupportTags {
+        org_name:       genesis.org_name.clone(),
+        supported_tags: vec!["level1".parse().expect("level1")],
+    });
+
+    assert!(updated.is_error());
+    assert_eq!(
+        updated.error_message,
+        ServiceError::NonAuthorized.to_string()
+    );
+}
+
+#[test]
+fn should_report_not_found_error_for_none_exists_org_on_update_org_supported_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::service_admin());
+
+    let updated = kyc.update_supported_tags(ctx.clone(), UpdateOrgSupportTags {
+        org_name:       "JinYiWei".parse().expect("JinYiWei"),
+        supported_tags: vec!["level1".parse().expect("level1")],
+    });
+
+    assert!(updated.is_error());
+    assert_eq!(
+        updated.error_message,
+        ServiceError::OrgNotFound("JinYiWei".parse().unwrap()).to_string()
+    );
+}
+
+#[test]
+fn should_update_user_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let genesis = TestService::genesis();
+    let mut tags: HashMap<TagName, FixedTagList> = HashMap::new();
+    tags.insert(
+        "title".parse().unwrap(),
+        FixedTagList::from_vec(vec!["ZaYi".parse().unwrap()]).expect("fixed tag list"),
+    );
+    tags.insert(
+        "speci".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Human".parse().unwrap()]).expect("fixed tag list"),
+    );
+    tags.insert(
+        "skills".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Guan1".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    let update_user_tags = UpdateUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+        tags:     tags.clone(),
+    };
+    service_call!(kyc, update_user_tags, ctx.clone(), update_user_tags.clone());
+    assert_eq!(ctx.get_cycles_used(), 21_000 + (3 + 3) * 10_000);
+
+    let events = ctx.get_events();
+    assert_eq!(events.len(), 1);
+    let event: Event<UpdateUserTags> = serde_json::from_str(&events[0].data).expect("parse event");
+    assert_eq!(event.topic, "update_user_tags");
+    assert_eq!(event.data, update_user_tags);
+
+    let updated_tags = service_call!(kyc, get_user_tags, ctx.clone(), GetUserTags {
+        org_name: genesis.org_name,
+        user:     TestService::chen_ten(),
+    });
+    assert_eq!(updated_tags, tags);
+}
+
+#[test]
+fn should_remove_unused_previous_user_tags_after_update_user_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let genesis = TestService::genesis();
+    let mut tags: HashMap<TagName, FixedTagList> = HashMap::new();
+    tags.insert(
+        "title".parse().unwrap(),
+        FixedTagList::from_vec(vec!["ZaYi".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    service_call!(kyc, update_user_tags, ctx.clone(), UpdateUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+        tags:     tags.clone(),
+    });
+
+    let updated_tags = service_call!(kyc, get_user_tags, ctx.clone(), GetUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+    });
+    assert_eq!(updated_tags, tags);
+
+    tags.clear();
+    tags.insert(
+        "skills".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Guan1".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    // title isn't included, so will be removed.
+    service_call!(kyc, update_user_tags, ctx.clone(), UpdateUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+        tags:     tags.clone(),
+    });
+
+    let updated_tags = service_call!(kyc, get_user_tags, ctx.clone(), GetUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+    });
+    assert_eq!(updated_tags, tags);
+
+    let maybe_title = kyc.get_tags(
+        TestService::chen_ten(),
+        genesis.org_name.to_string(),
+        "title".to_owned(),
+    );
+    assert_eq!(maybe_title, Ok(vec!["NULL".to_owned()]));
+}
+
+#[test]
+fn should_report_not_found_error_for_none_exists_org_on_update_user_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let updated = kyc.update_user_tags(ctx.clone(), UpdateUserTags {
+        org_name: "JinYiWei".parse().unwrap(),
+        user:     TestService::chen_ten(),
+        tags:     HashMap::new(),
+    });
+
+    assert!(updated.is_error());
+    assert_eq!(
+        updated.error_message,
+        ServiceError::OrgNotFound("JinYiWei".parse().unwrap()).to_string()
+    );
+}
+
+#[test]
+fn should_reject_unapproved_org_to_update_user_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::service_admin());
+
+    let org = RegisterNewOrg {
+        name:           "Guan8Train".parse().expect("guan_8"),
+        description:    "Help you pass guan 8 exam".to_owned(),
+        admin:          TestService::li_bing(),
+        supported_tags: vec![
+            "level8".parse().expect("level8"),
+            "level4".parse().expect("level4"),
+        ],
+    };
+
+    service_call!(kyc, register_org, ctx.clone(), org.clone());
+    let opt_registered = service_call!(kyc, get_org_info, ctx.clone(), org.name.clone());
+    assert_eq!(opt_registered.as_ref().map(|o| o.approved), Some(false));
+
+    let ctx = mock_context(TestService::li_bing());
+    let updated = kyc.update_user_tags(ctx.clone(), UpdateUserTags {
+        org_name: "Guan8Train".parse().unwrap(),
+        user:     TestService::li_bing(),
+        tags:     HashMap::new(),
+    });
+
+    assert!(updated.is_error());
+    assert_eq!(
+        updated.error_message,
+        ServiceError::UnapprovedOrg.to_string()
+    );
+}
+
+#[test]
+fn should_reject_update_user_tags_from_none_org_admin() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::chen_ten());
+
+    let genesis = TestService::genesis();
+    let mut tags: HashMap<TagName, FixedTagList> = HashMap::new();
+    tags.insert(
+        "title".parse().unwrap(),
+        FixedTagList::from_vec(vec!["ZaYi".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    let updated = kyc.update_user_tags(ctx, UpdateUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+        tags:     tags.clone(),
+    });
+
+    assert!(updated.is_error());
+    assert_eq!(
+        updated.error_message,
+        ServiceError::NonAuthorized.to_string()
+    );
+}
+
+#[test]
+fn should_reject_change_org_admin_from_none_org_admin() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::chen_ten());
+
+    let genesis = TestService::genesis();
+    let changed = kyc.change_org_admin(ctx, ChangeOrgAdmin {
+        name:      genesis.org_name,
+        new_admin: TestService::chen_ten(),
+    });
+
+    assert!(changed.is_error());
+    assert_eq!(
+        changed.error_message,
+        ServiceError::NonAuthorized.to_string()
+    );
+}
+
+#[test]
+fn should_report_not_found_error_for_change_none_exists_org_admin() {
+    let mut kyc = TestService::new();
+
+    let ctx = mock_context(TestService::service_admin());
+    let changed = kyc.change_org_admin(ctx, ChangeOrgAdmin {
+        name:      "JinYiWei".parse().unwrap(),
+        new_admin: TestService::chen_ten(),
+    });
+
+    assert!(changed.is_error());
+    assert_eq!(
+        changed.error_message,
+        ServiceError::OrgNotFound("JinYiWei".parse().unwrap()).to_string()
+    );
+}
+
+#[test]
+fn should_reject_to_approve_org_from_none_service_admin() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::service_admin());
+
+    let org = RegisterNewOrg {
+        name:           "Guan8Train".parse().expect("guan_8"),
+        description:    "Help you pass guan 8 exam".to_owned(),
+        admin:          TestService::li_bing(),
+        supported_tags: vec![
+            "level8".parse().expect("level8"),
+            "level4".parse().expect("level4"),
+        ],
+    };
+
+    service_call!(kyc, register_org, ctx.clone(), org.clone());
+
+    let ctx = mock_context(TestService::li_bing());
+    let approved = kyc.change_org_approved(ctx, ChangeOrgApproved {
+        org_name: org.name,
+        approved: true,
+    });
+
+    assert!(approved.is_error());
+    assert_eq!(
+        approved.error_message,
+        ServiceError::NonAuthorized.to_string()
+    );
+}
+
+#[test]
+fn should_reject_to_approve_none_exists_org() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::service_admin());
+
+    let approved = kyc.change_org_approved(ctx, ChangeOrgApproved {
+        org_name: "JinYiWei".parse().unwrap(),
+        approved: true,
+    });
+
+    assert!(approved.is_error());
+    assert_eq!(
+        approved.error_message,
+        ServiceError::OrgNotFound("JinYiWei".parse().unwrap()).to_string()
+    );
+}
+
+#[test]
+fn should_eval_user_tag_expression() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let genesis = TestService::genesis();
+    let mut tags: HashMap<TagName, FixedTagList> = HashMap::new();
+    tags.insert(
+        "title".parse().unwrap(),
+        FixedTagList::from_vec(vec!["ZaYi".parse().unwrap()]).expect("fixed tag list"),
+    );
+    tags.insert(
+        "speci".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Human".parse().unwrap()]).expect("fixed tag list"),
+    );
+    tags.insert(
+        "skills".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Guan1".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    let update_user_tags = UpdateUserTags {
+        org_name: genesis.org_name.clone(),
+        user:     TestService::chen_ten(),
+        tags:     tags.clone(),
+    };
+    service_call!(kyc, update_user_tags, ctx.clone(), update_user_tags.clone());
+
+    let evaluated = kyc.eval_user_tag_expression(ctx.clone(), EvalUserTagExpression {
+        user:       TestService::chen_ten(),
+        expression: "Da_Lisi.title@`ZaYi`".to_owned(),
+    });
+
+    assert!(!evaluated.is_error());
+    assert_eq!(evaluated.succeed_data, true);
+
+    let evaluated = kyc.eval_user_tag_expression(ctx.clone(), EvalUserTagExpression {
+        user:       TestService::chen_ten(),
+        expression: "Da_Lisi.speci@`Cat`".to_owned(),
+    });
+    assert!(!evaluated.is_error());
+    assert_eq!(evaluated.succeed_data, false);
+}
+
 struct TestService(KycService<SDK>);
 
 impl Deref for TestService {
@@ -354,7 +715,7 @@ impl TestService {
         Genesis {
             org_name: "Da_Lisi".parse().expect("Da_Lisi"),
             org_description: "temple ?".to_owned(),
-            org_admin: Self::service_admin(),
+            org_admin: Self::li_bing(),
             supported_tags,
             service_admin: Self::service_admin(),
         }

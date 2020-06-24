@@ -403,7 +403,7 @@ impl Validate for KycOrgInfo {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct FixedTagList(NoneEmptyVec<TagString>);
 
 impl FixedTagList {
@@ -541,13 +541,13 @@ pub struct NewOrgEvent {
     pub supported_tags: Vec<TagString>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct UpdateOrgSupportTags {
     pub org_name:       OrgName,
     pub supported_tags: Vec<TagName>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct UpdateUserTags {
     pub org_name: OrgName,
     pub user:     Address,
