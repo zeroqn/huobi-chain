@@ -180,7 +180,7 @@ fn should_allow_tx_with_enough_balance_to_cover_fee() {
     let chris = Address::from_hex(CHRIS).expect("chris");
 
     service.init_genesis(Genesis {
-        admin:     admin.clone(),
+        admin,
         deny_list: vec![],
     });
 
@@ -198,7 +198,7 @@ fn should_reject_tx_without_enough_balance_to_cover_fee() {
     let wesker = Address::from_hex(WESKER).expect("wesker");
 
     service.init_genesis(Genesis {
-        admin:     admin.clone(),
+        admin,
         deny_list: vec![],
     });
 
