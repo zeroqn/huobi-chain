@@ -464,7 +464,7 @@ impl Dispatcher for MockDispatcher {
         }
 
         let asset = Asset {
-            id:        Hash::digest(Bytes::from_static("7".as_bytes())),
+            id:        Hash::digest(Bytes::from_static(b"7")),
             name:      "da_wan".to_owned(),
             symbol:    "guan_mian".to_owned(),
             supply:    2_020_626,
