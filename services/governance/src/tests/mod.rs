@@ -467,7 +467,7 @@ impl Dispatcher for MockDispatcher {
             id:        Hash::digest(Bytes::from_static("7".as_bytes())),
             name:      "da_wan".to_owned(),
             symbol:    "guan_mian".to_owned(),
-            supply:    2020626,
+            supply:    2_020_626,
             precision: 311,
             issuer:    Address::from_hex("0x755cdba6ae4f479f7164792b318b2a06c759833b").unwrap(),
         };
