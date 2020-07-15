@@ -534,7 +534,7 @@ fn test_genesis_issuers_balance_overflow() {
 
 #[test]
 #[should_panic]
-fn test_genesis_issuers_balance_greater_than_supply() {
+fn test_genesis_issuers_balance_not_equal_to_supply() {
     let storage = ImplStorage::new(Arc::new(MemoryAdapter::new()));
     let chain_db = DefaultChainQuerier::new(Arc::new(storage));
 
@@ -559,7 +559,7 @@ fn test_genesis_issuers_balance_greater_than_supply() {
         supply: 1000,
         precision: 10,
         issuers: vec![
-            IssuerWithBalance::new(admin.clone(), 900),
+            IssuerWithBalance::new(admin.clone(), 400),
             IssuerWithBalance::new(caller, 500),
         ],
         fee_account: admin.clone(),

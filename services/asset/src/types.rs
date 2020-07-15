@@ -74,8 +74,8 @@ impl InitGenesisPayload {
 
             total_balance = checked_value;
         }
-        if total_balance > self.supply {
-            return Err("sum of issuers balance is greater than supply");
+        if total_balance == self.supply {
+            return Err("sum of issuers balance isn't equal to supply");
         }
 
         Ok(())
