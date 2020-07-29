@@ -376,11 +376,6 @@ impl<SDK: ServiceSDK> GovernanceService<SDK> {
             return tx_fee.err().unwrap().into();
         }
 
-        let tx_fee = tx_fee.unwrap();
-        if tx_fee == 0 {
-            return ServiceResponse::from_succeed("".to_owned());
-        }
-
         let miner_addr: Address = match self.sdk.get_value(&BLOCK_MINER_KEY.to_owned()) {
             None => return ServiceError::MissingInfo.into(),
             Some(addr) => addr,
@@ -390,6 +385,23 @@ impl<SDK: ServiceSDK> GovernanceService<SDK> {
             None => return ServiceError::MissingInfo.into(),
             Some(info) => info,
         };
+
+        let tx_fee = tx_fee.unwrap();
+        if tx_fee == 0 {
+            let resp = Self::emit_event(&ctx, "ConsumedTxFee".to_owned(), ConsumedTxFee {
+                caller: ctx.get_caller(),
+                miner:  miner_addr,
+                amount: info.tx_failure_fee,
+            });
+
+            let resp = if resp.is_error() {
+                ServiceResponse::from_error(resp.code, resp.error_message)
+            } else {
+                ServiceResponse::from_succeed("".to_owned())
+            };
+
+            return resp;
+        }
 
         let (tx, rx) = if tx_fee > 0 {
             (ctx.get_caller(), miner_addr.clone())
