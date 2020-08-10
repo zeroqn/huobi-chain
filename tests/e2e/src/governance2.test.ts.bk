@@ -1,9 +1,11 @@
 /* eslint-env node, jest */
 import { readFileSync } from 'fs';
 import { GovernanceService, RISCVService } from 'huobi-chain-sdk';
-import { admin, client, deploy, genRandomAccount, genRandomInt, get_balance, governance, transfer } from './utils';
+import {
+  admin, adminClient, deploy, genRandomAccount, genRandomInt, get_balance, governance, transfer,
+} from './common/utils';
 
-const governanceService = new GovernanceService(client, admin);
+const governanceService = new GovernanceService(adminClient, admin);
 
 const txFailureFee = governance.info.tx_failure_fee;
 const txFloorFee = governance.info.tx_floor_fee;
@@ -12,9 +14,9 @@ const txFeeDiscount: Array<any> = governance.info.tx_fee_discount;
 
 function cal_profit(balance: number, actualFee: number) {
   const discountFee = Math.max(actualFee, txFloorFee);
-  const discount = txFeeDiscount.filter(discount => discount.threshold <= balance).sort((d1, d2) => d1 - d2);
+  const discount = txFeeDiscount.filter((discount) => discount.threshold <= balance).sort((d1, d2) => d1 - d2);
   let fee = discountFee;
-  if(discount.length > 0) {
+  if (discount.length > 0) {
     fee = Math.ceil(fee * 100 / discount[0].discount_percent);
   }
   return Math.ceil(fee * 1000_000 / profitDeductRate);
@@ -22,9 +24,9 @@ function cal_profit(balance: number, actualFee: number) {
 
 function cal_fee(balance: number, accumulatedProfit: number) {
   const fee = Math.floor(accumulatedProfit * profitDeductRate / 1000_000);
-  const discount = txFeeDiscount.filter(discount => discount.threshold <= balance).sort((d1, d2) => d1 - d2);
+  const discount = txFeeDiscount.filter((discount) => discount.threshold <= balance).sort((d1, d2) => d1 - d2);
   let discountFee = fee;
-  if(discount.length > 0) {
+  if (discount.length > 0) {
     discountFee = Math.floor(discountFee * discount[0].discount_percent / 100);
   }
   return Math.max(discountFee, txFloorFee);
@@ -32,7 +34,7 @@ function cal_fee(balance: number, accumulatedProfit: number) {
 
 async function accumulate_profit(accumulatedProfit: number, service = governanceService, expectCode = 0) {
   const res0 = await service.write.accumulate_profit({
-    address: '0xd2d268749ffe54def4e2e73e5e06a4ebf0d6f585',  // any address is ok
+    address: '0xd2d268749ffe54def4e2e73e5e06a4ebf0d6f585', // any address is ok
     accumulated_profit: accumulatedProfit,
   });
   const resCode = Number(res0.response.response.code);
@@ -41,7 +43,7 @@ async function accumulate_profit(accumulatedProfit: number, service = governance
 
 async function test_accumulate_profit(initBalance: number, accumulatedProfit: number, expectFee: number, expectCode = 0) {
   const account = genRandomAccount();
-  const service = new GovernanceService(client, account);
+  const service = new GovernanceService(adminClient, account);
 
   await transfer(account.address, initBalance);
   const balance_before = await get_balance(account.address);
@@ -86,8 +88,8 @@ describe('governance service', () => {
     const balance_before = await get_balance(account.address);
     expect(balance_before.eq(initBalance)).toBe(true);
 
-    const service = new RISCVService(client, account);
-    const res = await service.write.exec({address: contractAddress, args: 'test_accumulate_profits_contract'});
+    const service = new RISCVService(adminClient, account);
+    const res = await service.write.exec({ address: contractAddress, args: 'test_accumulate_profits_contract' });
     expect(Number(res.response.response.code)).toBe(0);
 
     const balance_after = await get_balance(account.address);

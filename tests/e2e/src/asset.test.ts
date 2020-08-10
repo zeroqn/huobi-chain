@@ -1,25 +1,34 @@
 /* eslint-env node, jest */
 import { BigNumber } from '@mutadev/shared';
 import { Address } from '@mutadev/types';
-import { AssetService } from 'huobi-chain-sdk';
-import { admin, client, genRandomString, genRandomAccount, nativeAssetId } from './utils';
+import {AssetService } from 'huobi-chain-sdk';
+import {
+  admin, adminClient, genRandomString, genRandomAccount, genRandomHex,nativeAssetId,
+} from './common/utils';
 
-const assetService = new AssetService(client, admin);
+const assetServiceAdmin = new AssetService(adminClient, admin);
 
-async function create_asset(service = assetService, expectCode = 0, relayable = false, nameLen = 20, symbolLen = 8, supply = 0xfffffffffff, precision = 18) {
+async function create_asset(service = assetServiceAdmin, expectCode = 0, relayable = true,
+                            nameLen = 20, symbolLen = 8, supply = 0xfffffffffff,
+                            precision = 18) {
   const name = genRandomString('c', nameLen);
   const symbol = genRandomString('S', symbolLen);
   const res0 = await service.write.create_asset({
     name,
     symbol,
+    admin: admin.address,
     supply,
+    init_mints :[{
+    addr: admin.address,
+        balance: supply,
+  }],
     precision,
     relayable,
   });
   const code = Number(res0.response.response.code);
   expect(Number(res0.response.response.code)).toBe(expectCode);
 
-  if(code == 0) {
+  if (code == 0) {
     const asset = res0.response.response.succeedData;
     expect(asset.name).toBe(name);
     expect(asset.symbol).toBe(symbol);
@@ -28,7 +37,7 @@ async function create_asset(service = assetService, expectCode = 0, relayable = 
     expect(asset.relayable).toBe(relayable);
 
     const asset_id = asset.id;
-    const res1 = await service.read.get_asset({ id : asset_id });
+    const res1 = await service.read.get_asset({ id: asset_id });
     expect(Number(res1.code)).toBe(0);
     const data = res1.succeedData;
     expect(data.name).toBe(name);
@@ -38,13 +47,12 @@ async function create_asset(service = assetService, expectCode = 0, relayable = 
     expect(data.relayable).toBe(relayable);
 
     return asset_id;
-  } else {
-    return 'null';
   }
+  return 'null';
 }
 
 async function get_supply(assetId: string) {
-  const res = await assetService.read.get_asset({
+  const res = await assetServiceAdmin.read.get_asset({
     id: assetId,
   });
   return new BigNumber(res.succeedData.supply);
@@ -55,7 +63,7 @@ async function get_native_supply() {
 }
 
 async function get_balance(assetId: string, user: Address) {
-  const res0 = await assetService.read.get_balance({
+  const res0 = await assetServiceAdmin.read.get_balance({
     asset_id: assetId,
     user,
   });
@@ -70,7 +78,7 @@ async function get_native_balance(user: Address) {
 }
 
 async function get_allowance(assetId: string, grantor: Address, grantee: Address) {
-  const res0 = await assetService.read.get_allowance({
+  const res0 = await assetServiceAdmin.read.get_allowance({
     asset_id: assetId,
     grantor,
     grantee,
@@ -83,7 +91,7 @@ async function get_native_allowance(grantor: Address, grantee: Address) {
   return await get_allowance(nativeAssetId, grantor, grantee);
 }
 
-async function transfer(assetId: string, to: Address, value: number, service = assetService, expectCode = 0) {
+async function transfer(assetId: string, to: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
   const res = await service.write.transfer({
     asset_id: assetId,
     to,
@@ -94,11 +102,11 @@ async function transfer(assetId: string, to: Address, value: number, service = a
   expect(code).toBe(expectCode);
 }
 
-async function native_transfer(to: Address, value: number, service = assetService, expectCode = 0) {
+async function native_transfer(to: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
   return await transfer(nativeAssetId, to, value, service, expectCode);
 }
 
-async function approve(assetId: string, to: Address, value: number, service = assetService, expectCode = 0) {
+async function approve(assetId: string, to: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
   const res = await service.write.approve({
     asset_id: assetId,
     to,
@@ -109,11 +117,11 @@ async function approve(assetId: string, to: Address, value: number, service = as
   expect(code).toBe(expectCode);
 }
 
-async function native_approve(to: Address, value: number, service = assetService, expectCode = 0) {
-  return await approve(nativeAssetId, to, value, service, expectCode)
+async function native_approve(to: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
+  return await approve(nativeAssetId, to, value, service, expectCode);
 }
 
-async function transfer_from(assetId: string, sender: Address, recipient: Address, value: number, service = assetService, expectCode = 0) {
+async function transfer_from(assetId: string, sender: Address, recipient: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
   const res = await service.write.transfer_from({
     asset_id: assetId,
     sender,
@@ -125,65 +133,67 @@ async function transfer_from(assetId: string, sender: Address, recipient: Addres
   expect(code).toBe(expectCode);
 }
 
-async function native_transfer_from(sender: Address, recipient: Address, value: number, service = assetService, expectCode = 0) {
+async function native_transfer_from(sender: Address, recipient: Address, value: number, service = assetServiceAdmin, expectCode = 0) {
   return await transfer_from(nativeAssetId, sender, recipient, value, service, expectCode);
 }
 
-async function burn(assetId: string, amount: number, service = assetService, expectCode = 0) {
+async function burn(assetId: string, amount: number, service = assetServiceAdmin, expectCode = 0) {
   const res1 = await service.write.burn({
     asset_id: assetId,
     amount,
-    proof: '0x23311',
+    proof: genRandomHex(),
     memo: 'burn',
   });
   const code = Number(res1.response.response.code);
   expect(code).toBe(expectCode);
 }
 
-async function native_burn(amount: number, service = assetService, expectCode = 0) {
+async function native_burn(amount: number, service = assetServiceAdmin, expectCode = 0) {
   return await burn(nativeAssetId, amount, service, expectCode);
 }
 
-async function mint(assetId: string, to: Address, amount: number, service = assetService, expectCode = 0) {
-  const res1 = await service.write.mint({
+async function mint(assetId: string, to: Address, amount: number, service = assetServiceAdmin, expectCode = 0) {
+  const payload = {
     asset_id: assetId,
     to,
     amount,
-    proof: '0x23311',
+    proof: genRandomHex(),
     memo: 'mint',
-  });
+  }
+  const res1 = await service.write.mint(payload);
   const code = Number(res1.response.response.code);
   expect(code).toBe(expectCode);
 }
 
-async function relay(assetId: string, amount: number, service = assetService, expectCode = 0) {
+async function relay(assetId: string, amount: number, service = assetServiceAdmin, expectCode = 0) {
   const res1 = await service.write.relay({
     asset_id: assetId,
     amount,
-    proof: '0x23311',
+    proof: genRandomHex(),
     memo: 'burn',
   });
   const code = Number(res1.response.response.code);
   expect(code).toBe(expectCode);
 }
 
-async function native_relay(amount: number, service = assetService, expectCode = 0) {
+async function native_relay(amount: number, service = assetServiceAdmin, expectCode = 0) {
   return await relay(nativeAssetId, amount, service, expectCode);
 }
 
-async function change_admin(addr: Address, service = assetService, expectCode = 0) {
+async function change_admin(assetId: string,addr: Address, service = assetServiceAdmin, expectCode = 0) {
   const res1 = await service.write.change_admin({
-    addr,
+    asset_id:assetId,
+    new_admin: addr,
   });
   expect(Number(res1.response.response.code)).toBe(expectCode);
 }
 
 describe('asset service API test via huobi-sdk-js', () => {
-  test('test create_asset', async () => {
+  test('create_asset', async () => {
     await create_asset();
   });
 
-  test('test transfer', async () => {
+  test('transfer', async () => {
     const newAccount = genRandomAccount();
     const balance_before = await get_native_balance(newAccount.address);
     const value = 0xfffff;
@@ -193,9 +203,9 @@ describe('asset service API test via huobi-sdk-js', () => {
     expect(balance_after.minus(balance_before).eq(value)).toBe(true);
   });
 
-  test('test approve and transfer_from', async () => {
+  test('approve and transfer_from', async () => {
     const account1 = genRandomAccount();
-    const service1 = new AssetService(client, account1);
+    const service1 = new AssetService(adminClient, account1);
     const account2 = genRandomAccount();
     // transfer
     await native_transfer(account1.address, 0xffff1111);
@@ -215,32 +225,34 @@ describe('asset service API test via huobi-sdk-js', () => {
     expect(balance.eq(value1)).toBe(true);
   });
 
-  test('test mint', async () => {
-    const newAccount = genRandomAccount();
-    const newService = new AssetService(client, newAccount);
+  test('mint', async () => {
+    const randomAccount = genRandomAccount();
+
+    const assetServiceRandomAccount = new AssetService(adminClient, randomAccount);
     // transfer
     const value = 0xfffffff;
-    await native_transfer(newAccount.address, value);
+    await native_transfer(randomAccount.address, value);
     // create_asset
-    const assetId = await create_asset(newService);
+    // new asset's admin is 'admin'
+    const assetId = await create_asset(assetServiceAdmin);
     // unauthorized mint
     const amount = 0x652a1fff;
-    await mint(assetId, newAccount.address, amount, assetService, 0x6d);
+    await mint(assetId, randomAccount.address, amount, assetServiceRandomAccount, 0x6d);
 
-    const balance_before = await get_balance(assetId, admin.address);
+    const balance_before = await get_balance(assetId, randomAccount.address);
     const supply_before = await get_supply(assetId);
     // mint
-    await mint(assetId, admin.address, amount, newService);
+    await mint(assetId, randomAccount.address, amount, assetServiceAdmin);
     // check balance
-    const balance_after = await get_balance(assetId, admin.address);
+    const balance_after = await get_balance(assetId, randomAccount.address);
     expect(balance_after.minus(balance_before).eq(amount)).toBe(true);
     const supply_after = await get_supply(assetId);
     expect(supply_after.minus(supply_before).eq(amount)).toBe(true);
   });
 
-  test('test burn', async () => {
+  test('burn', async () => {
     const newAccount = genRandomAccount();
-    const newService = new AssetService(client, newAccount);
+    const newService = new AssetService(adminClient, newAccount);
     // transfer
     const value = 0xffffffff;
     await native_transfer(newAccount.address, value);
@@ -252,35 +264,35 @@ describe('asset service API test via huobi-sdk-js', () => {
     expect(supply_before.minus(supply_after).eq(amount)).toBe(true);
   });
 
-  test('test relay', async () => {
-    const asset_id_1 = await create_asset();
+  test('relay', async () => {
+    const asset_id_1 = await create_asset(assetServiceAdmin,0,false);
     // test relay of unrelayable asset
     const amount = 0x3ab12451;
-    await relay(asset_id_1, amount, assetService, 0x6f);
+    await relay(asset_id_1, amount, assetServiceAdmin, 0x6f);
     // test relay of relayable asset
     await native_relay(amount);
   });
 
-  test('test change_admin', async () => {
+  test('change_admin', async () => {
     const newAccount = genRandomAccount();
-    const newService = new AssetService(client, newAccount);
+    const newService = new AssetService(adminClient, newAccount);
     // transfer
     await native_transfer(newAccount.address, 0xfff26635);
     // change_admin
-    await change_admin(newAccount.address, newService, 0x6d);
+    await change_admin(nativeAssetId,newAccount.address, newService, 0x6d);
     // change_admin
-    await change_admin(newAccount.address);
+    await change_admin(nativeAssetId,newAccount.address);
     // change_admin
-    await change_admin(admin.address, newService);
+    await change_admin(nativeAssetId,admin.address, newService);
   });
 
-  test('test drain transfer', async () => {
+  test('drain transfer', async () => {
     const newAccount = genRandomAccount();
     // transfer
     const value = 0xfffff;
     await native_transfer(newAccount.address, value);
     // drain transfer
-    const newService = new AssetService(client, newAccount);
+    const newService = new AssetService(adminClient, newAccount);
     await native_transfer(admin.address, value, newService, 0x66);
   });
 });

@@ -6,8 +6,8 @@
     "skipLibCheck": true,
     "declaration": true,
     "esModuleInterop": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+//    "noUnusedLocals": true,
+//    "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "traceResolution": false,
@@ -21,9 +21,13 @@
     ],
     "baseUrl": "./packages",
     "paths": {
-    }
+    },
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": "lib",
+    "rootDir": "src"
   },
-  "files": ["./riscv.test.ts" , "./basic.test.ts", "./asset.test.ts", "./governance.test.ts", "./helper.ts", "./utils.ts"],
+  "include": ["./src/**/*.ts"],
   "references": [
   ]
 }

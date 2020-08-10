@@ -1,28 +1,28 @@
 /* eslint-env node, jest */
 import { retry } from '@mutadev/client';
 import {
-  client,
+  adminClient,
   hexToNum,
   admin,
   // eslint-disable-next-line
-} from "./utils";
+} from "./common/utils";
 
 describe('basic API test via muta-sdk-js', () => {
   test('getLatestBlockHeight', async () => {
-    const currentHeight = await client.getLatestBlockHeight();
+    const currentHeight = await adminClient.getLatestBlockHeight();
     expect(currentHeight).toBeGreaterThan(0);
   });
 
   test('getBlock', async () => {
-    const block = await client.getBlock('0x01');
+    const block = await adminClient.getBlock('0x01');
     expect(block).not.toBe(undefined);
-    if(block != undefined) {
+    if (block != undefined) {
       expect(hexToNum(block.header.height)).toBe(1);
     }
   });
 
   test('send_tx_exceed_cycles_limit', async () => {
-    const tx = await client.composeTransaction({
+    const tx = await adminClient.composeTransaction({
       method: 'create_asset',
       payload: {
         name: 'Muta Token',
@@ -36,7 +36,7 @@ describe('basic API test via muta-sdk-js', () => {
     const signedTx = admin.signTransaction(tx);
 
     try {
-      await client.sendTransaction(signedTx);
+      await adminClient.sendTransaction(signedTx);
       expect(true).toBe(false);
     } catch (err) {
       expect(err.response.errors[0].message.includes('ExceedCyclesLimit')).toBe(
@@ -46,7 +46,7 @@ describe('basic API test via muta-sdk-js', () => {
   });
 
   test('send_tx_exceed_tx_size_limit', async () => {
-    const tx = await client.composeTransaction({
+    const tx = await adminClient.composeTransaction({
       method: 'create_asset',
       payload: {
         name: 'Muta Token',
@@ -60,7 +60,7 @@ describe('basic API test via muta-sdk-js', () => {
     const signedTx = admin.signTransaction(tx);
 
     try {
-      await client.sendTransaction(signedTx);
+      await adminClient.sendTransaction(signedTx);
     } catch (err) {
       const errMsg = err.response.errors[0].message;
       expect(errMsg.includes('ExceedSizeLimit')).toBe(true);
@@ -68,7 +68,7 @@ describe('basic API test via muta-sdk-js', () => {
   });
 
   test('send tx, get tx and receipt', async () => {
-    const tx = await client.composeTransaction({
+    const tx = await adminClient.composeTransaction({
       method: 'create_asset',
       payload: {
         name: 'Muta Token',
@@ -80,13 +80,13 @@ describe('basic API test via muta-sdk-js', () => {
     });
     const signedTx = admin.signTransaction(tx);
 
-    const hash = await client.sendTransaction(signedTx);
-    const receipt = await retry(() => client.getReceipt(hash));
+    const hash = await adminClient.sendTransaction(signedTx);
+    const receipt = await retry(() => adminClient.getReceipt(hash));
     expect(receipt.txHash).toBe(hash);
 
-    const committedTx = await client.getTransaction(hash);
+    const committedTx = await adminClient.getTransaction(hash);
     expect(committedTx).not.toBe(undefined);
-    if(committedTx != undefined) {
+    if (committedTx != undefined) {
       expect(committedTx.txHash).toBe(hash);
     }
   });

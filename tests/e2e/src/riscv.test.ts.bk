@@ -2,9 +2,11 @@
 import { readFileSync } from 'fs';
 import { Address } from '@mutadev/types';
 import { InterpreterType, RISCVService } from 'huobi-chain-sdk';
-import { admin, client, genRandomAccount, get_balance, transfer } from './utils';
+import {
+  admin, adminClient, genRandomAccount, get_balance, transfer,
+} from './common/utils';
 
-const riscvService = new RISCVService(client, admin);
+const riscvService = new RISCVService(adminClient, admin);
 
 async function deploy(code: string, initArgs: string, service = riscvService, expectCode = 0) {
   const res0 = await service.write.deploy({
@@ -14,20 +16,19 @@ async function deploy(code: string, initArgs: string, service = riscvService, ex
   });
   const resCode = Number(res0.response.response.code);
   expect(resCode).toBe(expectCode);
-  if(resCode == 0) {
+  if (resCode == 0) {
     return res0.response.response.succeedData.address;
-  } else {
-    return ''
   }
+  return '';
 }
 
 async function check_deploy_auth(address: Address, is_exist: boolean) {
   const res0 = await riscvService.read.check_deploy_auth({
-    addresses: [ address ],
+    addresses: [address],
   });
   expect(Number(res0.code)).toBe(0);
-  const addresses = res0.succeedData.addresses;
-  if(is_exist) {
+  const { addresses } = res0.succeedData;
+  if (is_exist) {
     expect(addresses.indexOf(address)).not.toBe(-1);
   } else {
     expect(addresses.indexOf(address)).toBe(-1);
@@ -36,14 +37,14 @@ async function check_deploy_auth(address: Address, is_exist: boolean) {
 
 async function grant_deploy_auth(address: Address, service = riscvService, expectCode = 0) {
   const res0 = await service.write.grant_deploy_auth({
-    addresses: [ address ],
+    addresses: [address],
   });
   expect(Number(res0.response.response.code)).toBe(expectCode);
 }
 
 async function revoke_deploy_auth(address: Address, service = riscvService, expectCode = 0) {
   const res0 = await service.write.revoke_deploy_auth({
-    addresses: [ address ],
+    addresses: [address],
   });
   expect(Number(res0.response.response.code)).toBe(expectCode);
 }
@@ -55,11 +56,10 @@ async function call(contractAddress: Address, args: string, service = riscvServi
   });
   const code = Number(res0.code);
   expect(code).toBe(expectCode);
-  if(code == 0) {
+  if (code == 0) {
     return res0.succeedData;
-  } else {
-    return '';
   }
+  return '';
 }
 
 async function exec(contractAddress: Address, args: string, service = riscvService, expectCode = 0) {
@@ -72,14 +72,14 @@ async function exec(contractAddress: Address, args: string, service = riscvServi
 
 async function approve_contracts(contractAddress: Address, service = riscvService, expectCode = 0) {
   const res0 = await service.write.approve_contracts({
-    addresses: [ contractAddress ],
+    addresses: [contractAddress],
   });
   expect(Number(res0.response.response.code)).toBe(expectCode);
 }
 
 async function revoke_contracts(contractAddress: Address, service = riscvService, expectCode = 0) {
   const res0 = await service.write.revoke_contracts({
-    addresses: [ contractAddress ],
+    addresses: [contractAddress],
   });
   expect(Number(res0.response.response.code)).toBe(expectCode);
 }
@@ -98,7 +98,7 @@ describe('riscv service', () => {
   test('test_deploy_auth', async () => {
     const code = readFileSync('../../services/riscv/src/tests/simple_storage');
     const account = genRandomAccount();
-    const newService = new RISCVService(client, account);
+    const newService = new RISCVService(adminClient, account);
     await transfer(account.address, 9999999);
     // deploy before auth
     await deploy(code.toString('hex'), 'set k init', newService, 0x6d);
@@ -118,7 +118,7 @@ describe('riscv service', () => {
   test('test_contract_auth', async () => {
     const code = readFileSync('../../services/riscv/src/tests/simple_storage');
     const account = genRandomAccount();
-    const newService = new RISCVService(client, account);
+    const newService = new RISCVService(adminClient, account);
     await transfer(account.address, 9999999);
     await grant_deploy_auth(account.address);
     const contractAddress = await deploy(code.toString('hex'), 'set k init', newService);
@@ -138,7 +138,7 @@ describe('riscv service', () => {
   test('test_normal_process', async () => {
     const code = readFileSync('../../services/riscv/src/tests/simple_storage');
     const account = genRandomAccount();
-    const newService = new RISCVService(client, account);
+    const newService = new RISCVService(adminClient, account);
     await transfer(account.address, 9999999);
     await grant_deploy_auth(account.address);
     const contractAddress = await deploy(code.toString('hex'), 'set k init', newService);
@@ -182,7 +182,7 @@ describe('riscv service', () => {
   });
 
   test('test_riscv_invalid_contract', async () => {
-    const code = Buffer.from('invalid contract', 'utf8').toString('hex')
+    const code = Buffer.from('invalid contract', 'utf8').toString('hex');
     await grant_deploy_auth(admin.address);
     await deploy(code, 'invalid params', riscvService, 0x69);
   });
