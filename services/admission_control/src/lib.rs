@@ -49,7 +49,7 @@ macro_rules! sub_cycles {
 }
 
 pub trait AdmissionControl {
-    fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> bool;
+    fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> Result<(), String>;
 }
 
 #[derive(Debug, Display)]
@@ -112,9 +112,13 @@ where
     G: Governance,
     SDK: ServiceSDK + 'static,
 {
-    fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> bool {
-        (!self.is_permitted(ctx.clone(), payload.clone()).is_error())
-            && (!self.is_valid(ctx.clone(), payload).is_error())
+    fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> Result<(), String> {
+        if !self.is_permitted(ctx.clone(), payload.clone()).is_error() {
+            return Err("The tx sender is not permitted".to_owned());
+        } else if !self.is_valid(ctx.clone(), payload).is_error() {
+            return Err("The tx sender's balance is insufficient".to_owned());
+        }
+        Ok(())
     }
 }
 
