@@ -45,11 +45,8 @@ where
             );
         }
 
-        if !self.admission_control.is_allowed(&ctx, payload) {
-            return ServiceResponse::<()>::from_error(
-                102,
-                "The transaction is not allowed".to_owned(),
-            );
+        if let Err(reason) = self.admission_control.is_allowed(&ctx, payload) {
+            return ServiceResponse::<()>::from_error(102, reason);
         }
 
         ServiceResponse::from_succeed(())
