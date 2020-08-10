@@ -645,7 +645,16 @@ where
         ctx: &ServiceContext,
         payload: UpdateMetadataPayload,
     ) -> Result<(), ServiceResponse<()>> {
-        self.metadata.update(ctx, payload)
+        self.metadata.update(
+            &ServiceContext::with_context(
+                ctx,
+                Some(ADMISSION_TOKEN.clone()),
+                ctx.get_service_name().to_string(),
+                ctx.get_service_method().to_string(),
+                ctx.get_payload().to_string(),
+            ),
+            payload,
+        )
     }
 
     fn hook_transfer_from(
