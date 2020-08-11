@@ -48,6 +48,8 @@ macro_rules! sub_cycles {
     };
 }
 
+pub const ADMISSION_CONTROL_SERVICE_NAME: &str = "admission_control";
+
 pub trait AdmissionControl {
     fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> Result<(), String>;
 }
@@ -268,7 +270,7 @@ where
         match serde_json::to_string(&event) {
             Err(err) => ServiceError::Codec(err).into(),
             Ok(json) => {
-                ctx.emit_event(name, json);
+                ctx.emit_event(ADMISSION_CONTROL_SERVICE_NAME.to_owned(), name, json);
                 ServiceResponse::from_succeed(())
             }
         }

@@ -30,6 +30,8 @@ dependencies = [
  "futures 0.3.5",
  "http 0.2.1",
  "log",
+ "openssl",
+ "tokio-openssl",
  "trust-dns-proto",
  "trust-dns-resolver",
 ]
@@ -45,6 +47,7 @@ dependencies = [
  "actix-rt",
  "actix-service",
  "actix-threadpool",
+ "actix-tls",
  "actix-utils",
  "base64 0.11.0",
  "bitflags",
@@ -192,6 +195,8 @@ dependencies = [
  "either",
  "futures 0.3.5",
  "log",
+ "openssl",
+ "tokio-openssl",
 ]
 
 [[package]]
@@ -239,6 +244,7 @@ dependencies = [
  "log",
  "mime",
  "net2",
+ "openssl",
  "pin-project",
  "regex",
  "serde",
@@ -298,6 +304,12 @@ dependencies = [
  "serde",
  "serde_json",
 ]
+
+[[package]]
+name = "ahash"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8fd72866655d1904d6b0997d0b07ba561047d070fbe29de039031c641b61217"
 
 [[package]]
 name = "aho-corasick"
@@ -360,8 +372,8 @@ checksum = "4d25d88fd6b8041580a654f9d0c581a047baee2b3efee13275f2fc392fc75034"
 
 [[package]]
 name = "asset"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -473,6 +485,7 @@ dependencies = [
  "futures-core",
  "log",
  "mime",
+ "openssl",
  "percent-encoding 2.1.0",
  "rand 0.7.3",
  "serde",
@@ -551,8 +564,8 @@ dependencies = [
 
 [[package]]
 name = "binding-macro"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "derive_more 0.15.0",
  "muta-protocol",
@@ -725,7 +738,7 @@ version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b90456b297d4aa962afb8712ed5a581abdde0f7835653e5f2142c5ed06d1eeed"
 dependencies = [
- "hashbrown",
+ "hashbrown 0.3.1",
  "hasher",
  "parking_lot 0.8.0",
  "rlp 0.3.0",
@@ -800,7 +813,7 @@ dependencies = [
 [[package]]
 name = "common-apm"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "derive_more 0.99.9",
  "lazy_static",
@@ -812,8 +825,8 @@ dependencies = [
 
 [[package]]
 name = "common-config-parser"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "reqwest",
  "serde",
@@ -824,8 +837,8 @@ dependencies = [
 
 [[package]]
 name = "common-crypto"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "ophelia",
  "ophelia-bls-amcl",
@@ -834,8 +847,8 @@ dependencies = [
 
 [[package]]
 name = "common-logger"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "json",
  "log",
@@ -844,8 +857,8 @@ dependencies = [
 
 [[package]]
 name = "common-merkle"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "muta-protocol",
  "rayon",
@@ -888,8 +901,8 @@ checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 
 [[package]]
 name = "core-api"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "actix-web",
  "async-trait",
@@ -906,13 +919,14 @@ dependencies = [
  "log",
  "muta-protocol",
  "num_cpus",
+ "openssl",
  "serde_json",
 ]
 
 [[package]]
 name = "core-consensus"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "async-trait",
  "bincode",
@@ -959,8 +973,8 @@ checksum = "90accdee0acac454f78a41d2eefc1212ec6eaa2ae6a216619389e996c0155c3c"
 
 [[package]]
 name = "core-mempool"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "async-trait",
  "bytes 0.5.5",
@@ -986,8 +1000,8 @@ dependencies = [
 
 [[package]]
 name = "core-network"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "async-trait",
  "bincode",
@@ -1015,8 +1029,8 @@ dependencies = [
 
 [[package]]
 name = "core-storage"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "async-trait",
  "common-apm",
@@ -1328,10 +1342,10 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "framework"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
- "asset 0.2.0-beta3",
+ "asset 0.2.0-beta.4",
  "byteorder",
  "bytes 0.5.5",
  "cita_trie",
@@ -1343,8 +1357,12 @@ dependencies = [
  "json",
  "lazy_static",
  "log",
- "metadata 0.2.0-beta3",
+ "lru",
+ "lru-cache",
+ "metadata 0.2.0-beta.4",
  "muta-protocol",
+ "parking_lot 0.11.0",
+ "rand 0.7.3",
  "rayon",
  "rlp 0.4.5",
  "rocksdb",
@@ -1629,6 +1647,16 @@ name = "hashbrown"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29fba9abe4742d586dfd0c06ae4f7e73a1c2d86b856933509b269d82cdf06e18"
+
+[[package]]
+name = "hashbrown"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e91b62f79061a0bc2e046024cb7ba44b08419ed238ecbd9adbd787434b9e8c25"
+dependencies = [
+ "ahash",
+ "autocfg 1.0.0",
+]
 
 [[package]]
 name = "hasher"
@@ -2119,6 +2147,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lru"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "111b945ac72ec09eb7bc62a0fbdc3cc6e80555a7245f52a69d3921a75b53b153"
+dependencies = [
+ "hashbrown 0.8.2",
+]
+
+[[package]]
 name = "lru-cache"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2172,8 +2209,8 @@ dependencies = [
 
 [[package]]
 name = "metadata"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -2298,8 +2335,8 @@ dependencies = [
 
 [[package]]
 name = "multi-signature"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -2318,8 +2355,8 @@ dependencies = [
 
 [[package]]
 name = "muta"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "actix-rt",
  "backtrace",
@@ -2393,8 +2430,8 @@ dependencies = [
 
 [[package]]
 name = "muta-protocol"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "arc-swap 0.4.7",
  "async-trait",
@@ -3003,6 +3040,7 @@ dependencies = [
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
  "rand_hc 0.2.0",
+ "rand_pcg 0.2.1",
 ]
 
 [[package]]
@@ -4015,6 +4053,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-openssl"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c4b08c5f4208e699ede3df2520aca2e82401b2de33f45e96696a074480be594"
+dependencies = [
+ "openssl",
+ "tokio 0.2.21",
+]
+
+[[package]]
 name = "tokio-reactor"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4347,8 +4395,8 @@ dependencies = [
 
 [[package]]
 name = "util"
-version = "0.2.0-beta3"
-source = "git+https://github.com/nervosnetwork/muta?rev=828e6d53#828e6d539cf4da9cf042c450418e75a944315014"
+version = "0.2.0-beta.4"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-beta.4#2974420fc6a2eb4e775e6b51aad4664fb2afc5ab"
 dependencies = [
  "binding-macro",
  "byteorder",

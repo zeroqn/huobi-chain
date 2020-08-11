@@ -12,6 +12,7 @@ use protocol::types::{Metadata, ServiceContext, METADATA_KEY};
 use crate::types::UpdateMetadataPayload;
 
 static ADMISSION_TOKEN: Bytes = Bytes::from_static(b"governance");
+pub const METADATA_SERVICE_NAME: &str = "metadata";
 
 macro_rules! impl_metadata {
     ($self: expr, $method: ident, $ctx: expr) => {{

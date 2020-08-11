@@ -20,6 +20,7 @@ use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK, StoreMap};
 use protocol::types::{Address, Hash, ServiceContext};
 
 const NATIVE_ASSET_KEY: &str = "native_asset";
+pub const ASSET_SERVICE_NAME: &str = "asset";
 
 macro_rules! get_asset_require_admin {
     ($sdk:expr, $ctx:expr, $id: expr) => {{
@@ -655,7 +656,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         match serde_json::to_string(&event) {
             Err(err) => ServiceError::JsonParse(err).into(),
             Ok(json) => {
-                ctx.emit_event(name, json);
+                ctx.emit_event(ASSET_SERVICE_NAME.to_owned(), name, json);
                 ServiceResponse::from_succeed(())
             }
         }

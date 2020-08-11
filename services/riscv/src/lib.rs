@@ -28,6 +28,7 @@ use serde::Serialize;
 use std::{cell::RefCell, rc::Rc};
 
 const RISCV_ADMIN_KEY: &str = "riscv_admin";
+pub const RISCV_SERVICE_NAME: &str = "riscv";
 
 #[macro_export]
 macro_rules! sub_cycles {
@@ -460,7 +461,7 @@ where
         match serde_json::to_string(&event) {
             Err(err) => ServiceError::Serde(err).into(),
             Ok(json) => {
-                ctx.emit_event(name, json);
+                ctx.emit_event(RISCV_SERVICE_NAME.to_owned(), name, json);
                 ServiceResponse::from_succeed(())
             }
         }

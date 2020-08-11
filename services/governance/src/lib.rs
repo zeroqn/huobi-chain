@@ -34,6 +34,7 @@ const MINER_PROFIT_OUTLET_KEY: &str = "miner_address";
 const MILLION: u64 = 1_000_000;
 const HUNDRED: u64 = 100;
 static ADMISSION_TOKEN: Bytes = Bytes::from_static(b"governance");
+pub const GOVERNANCE_SERVICE_NAME: &str = "governance";
 
 macro_rules! require_admin {
     ($service: expr, $ctx:expr) => {
@@ -677,7 +678,7 @@ where
         match serde_json::to_string(&event) {
             Err(err) => ServiceError::JsonParse(err).into(),
             Ok(json) => {
-                ctx.emit_event(name, json);
+                ctx.emit_event(GOVERNANCE_SERVICE_NAME.to_owned(), name, json);
                 ServiceResponse::from_succeed(())
             }
         }

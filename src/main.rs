@@ -1,14 +1,16 @@
-use admission_control::AdmissionControlService;
-use asset::AssetService;
-use authorization::AuthorizationService;
 use derive_more::{Display, From};
-use governance::GovernanceService;
-use kyc::KycService;
-use metadata::MetadataService;
-use multi_signature::MultiSignatureService;
+
 use muta::MutaBuilder;
 use protocol::traits::{SDKFactory, Service, ServiceMapping, ServiceSDK};
 use protocol::{ProtocolError, ProtocolErrorKind, ProtocolResult};
+
+use admission_control::{AdmissionControlService, ADMISSION_CONTROL_SERVICE_NAME};
+use asset::{AssetService, ASSET_SERVICE_NAME};
+use authorization::{AuthorizationService, AUTHORIZATION_SERVICE_NAME};
+use governance::{GovernanceService, GOVERNANCE_SERVICE_NAME};
+use kyc::{KycService, KYC_SERVICE_NAME};
+use metadata::{MetadataService, METADATA_SERVICE_NAME};
+use multi_signature::{MultiSignatureService, MULTI_SIG_SERVICE_NAME};
 
 type AuthorizationEntity<T> = AuthorizationService<
     AdmissionControlService<
@@ -34,13 +36,17 @@ impl ServiceMapping for DefaultServiceMapping {
         factory: &Factory,
     ) -> ProtocolResult<Box<dyn Service>> {
         let service = match name {
-            "authorization" => Box::new(Self::new_authorization(factory)?) as Box<dyn Service>,
-            "governance" => Box::new(Self::new_governance(factory)?) as Box<dyn Service>,
-            "admission_control" => Box::new(Self::new_admission_ctrl(factory)?) as Box<dyn Service>,
-            "asset" => Box::new(Self::new_asset(factory)?) as Box<dyn Service>,
-            "metadata" => Box::new(Self::new_metadata(factory)?) as Box<dyn Service>,
-            "kyc" => Box::new(Self::new_kyc(factory)?) as Box<dyn Service>,
-            "multi_signature" => Box::new(Self::new_multi_sig(factory)?) as Box<dyn Service>,
+            AUTHORIZATION_SERVICE_NAME => {
+                Box::new(Self::new_authorization(factory)?) as Box<dyn Service>
+            }
+            GOVERNANCE_SERVICE_NAME => Box::new(Self::new_governance(factory)?) as Box<dyn Service>,
+            ADMISSION_CONTROL_SERVICE_NAME => {
+                Box::new(Self::new_admission_ctrl(factory)?) as Box<dyn Service>
+            }
+            ASSET_SERVICE_NAME => Box::new(Self::new_asset(factory)?) as Box<dyn Service>,
+            METADATA_SERVICE_NAME => Box::new(Self::new_metadata(factory)?) as Box<dyn Service>,
+            KYC_SERVICE_NAME => Box::new(Self::new_kyc(factory)?) as Box<dyn Service>,
+            MULTI_SIG_SERVICE_NAME => Box::new(Self::new_multi_sig(factory)?) as Box<dyn Service>,
             _ => panic!("not found service"),
         };
 
@@ -49,13 +55,13 @@ impl ServiceMapping for DefaultServiceMapping {
 
     fn list_service_name(&self) -> Vec<String> {
         vec![
-            "authorization".to_owned(),
-            "asset".to_owned(),
-            "metadata".to_owned(),
-            "kyc".to_owned(),
-            "multi_signature".to_owned(),
-            "governance".to_owned(),
-            "admission_control".to_owned(),
+            AUTHORIZATION_SERVICE_NAME.to_owned(),
+            ASSET_SERVICE_NAME.to_owned(),
+            METADATA_SERVICE_NAME.to_owned(),
+            KYC_SERVICE_NAME.to_owned(),
+            MULTI_SIG_SERVICE_NAME.to_owned(),
+            GOVERNANCE_SERVICE_NAME.to_owned(),
+            ADMISSION_CONTROL_SERVICE_NAME.to_owned(),
         ]
     }
 }

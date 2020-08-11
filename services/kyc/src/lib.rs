@@ -29,6 +29,7 @@ use std::{
 };
 
 const KYC_SERVICE_ADMIN_KEY: &str = "kyc_service_admin";
+pub const KYC_SERVICE_NAME: &str = "kyc";
 
 macro_rules! require_service_admin {
     ($service:expr, $ctx:expr) => {
@@ -459,7 +460,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         match serde_json::to_string(&event) {
             Err(err) => ServiceError::Serde(err).into(),
             Ok(json) => {
-                ctx.emit_event(name, json);
+                ctx.emit_event(KYC_SERVICE_NAME.to_owned(), name, json);
                 ServiceResponse::from_succeed(())
             }
         }

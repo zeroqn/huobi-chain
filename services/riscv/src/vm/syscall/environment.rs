@@ -11,7 +11,7 @@ use crate::vm::syscall::convention::{
     SYSCODE_CYCLE_PRICE, SYSCODE_CYCLE_USED, SYSCODE_EMIT_EVENT, SYSCODE_EXTRA, SYSCODE_IS_INIT,
     SYSCODE_ORIGIN, SYSCODE_TIMESTAMP, SYSCODE_TX_HASH, SYSCODE_TX_NONCE,
 };
-use crate::InterpreterParams;
+use crate::{InterpreterParams, RISCV_SERVICE_NAME};
 
 pub struct SyscallEnvironment {
     context: ServiceContext,
@@ -146,7 +146,8 @@ impl<Mac: ckb_vm::SupportMachine> ckb_vm::Syscalls<Mac> for SyscallEnvironment {
                 let event = String::from_utf8(get_arr(machine, event_ptr, event_len)?)
                     .map_err(|_| ckb_vm::Error::IO(std::io::ErrorKind::InvalidData))?;
 
-                self.context.emit_event(name, event);
+                self.context
+                    .emit_event(RISCV_SERVICE_NAME.to_owned(), name, event);
 
                 Ok(true)
             }
