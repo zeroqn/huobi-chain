@@ -290,14 +290,14 @@ checksum = "567b077b825e468cc974f0020d4082ee6e03132512f207ef1a02fd5d00d1f32d"
 name = "admission_control"
 version = "0.1.0"
 dependencies = [
- "asset 0.5.0-beta.2",
+ "asset 0.5.0-beta.4",
  "binding-macro",
  "cita_trie",
  "core-storage",
  "derive_more 0.99.9",
  "framework",
  "governance",
- "metadata 0.5.0-beta.2",
+ "metadata 0.5.0-beta.4",
  "muta",
  "muta-protocol",
  "rand 0.7.3",
@@ -388,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "asset"
-version = "0.5.0-beta.2"
+version = "0.5.0-beta.4"
 dependencies = [
  "async-trait",
  "binding-macro",
@@ -1583,9 +1583,9 @@ dependencies = [
 
 [[package]]
 name = "governance"
-version = "0.5.0-beta.2"
+version = "0.5.0-beta.4"
 dependencies = [
- "asset 0.5.0-beta.2",
+ "asset 0.5.0-beta.4",
  "async-trait",
  "binding-macro",
  "byteorder",
@@ -1595,7 +1595,7 @@ dependencies = [
  "framework",
  "hex",
  "lazy_static",
- "metadata 0.5.0-beta.2",
+ "metadata 0.5.0-beta.4",
  "muta",
  "muta-codec-derive",
  "muta-protocol",
@@ -1762,10 +1762,10 @@ dependencies = [
 
 [[package]]
 name = "huobi-chain"
-version = "0.5.0-beta.2"
+version = "0.5.0-beta.4"
 dependencies = [
  "admission_control",
- "asset 0.5.0-beta.2",
+ "asset 0.5.0-beta.4",
  "async-trait",
  "authorization",
  "bytes 0.5.5",
@@ -1777,7 +1777,7 @@ dependencies = [
  "hex",
  "kyc",
  "lazy_static",
- "metadata 0.5.0-beta.2",
+ "metadata 0.5.0-beta.4",
  "multi-signature",
  "muta",
  "muta-codec-derive",
@@ -2224,7 +2224,7 @@ dependencies = [
 
 [[package]]
 name = "metadata"
-version = "0.5.0-beta.2"
+version = "0.5.0-beta.4"
 dependencies = [
  "async-trait",
  "binding-macro",
@@ -3295,9 +3295,9 @@ dependencies = [
 
 [[package]]
 name = "riscv"
-version = "0.5.0-beta.2"
+version = "0.5.0-beta.4"
 dependencies = [
- "asset 0.5.0-beta.2",
+ "asset 0.5.0-beta.4",
  "async-trait",
  "binding-macro",
  "byteorder",
