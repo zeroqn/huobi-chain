@@ -310,9 +310,24 @@ fn should_reject_already_exists_org_to_register_again() {
 }
 
 #[test]
-fn should_update_org_supported_tags() {
+fn should_not_update_org_supported_tags() {
     let mut kyc = TestService::new();
     let ctx = mock_context(TestService::service_admin());
+
+    let genesis = TestService::genesis();
+
+    let res = kyc.update_supported_tags(ctx, UpdateOrgSupportTags {
+        org_name:       genesis.org_name,
+        supported_tags: vec!["level1".parse().expect("level1")],
+    });
+
+    assert!(res.is_error());
+}
+
+#[test]
+fn should_update_org_supported_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
 
     let genesis = TestService::genesis();
     service_call!(
@@ -333,7 +348,7 @@ fn should_update_org_supported_tags() {
 #[test]
 fn should_reject_update_org_supported_tags_without_admin_permission() {
     let mut kyc = TestService::new();
-    let ctx = mock_context(TestService::li_bing());
+    let ctx = mock_context(TestService::chen_ten());
 
     let genesis = TestService::genesis();
     let updated = kyc.update_supported_tags(ctx, UpdateOrgSupportTags {
@@ -407,6 +422,28 @@ fn should_update_user_tags() {
 
     let admin = service_call!(kyc, get_admin, ctx);
     assert_eq!(admin, Address::from_hex(SERVICE_ADMIN).unwrap());
+}
+
+#[test]
+fn should_not_update_user_tags() {
+    let mut kyc = TestService::new();
+    let ctx = mock_context(TestService::li_bing());
+
+    let genesis = TestService::genesis();
+    let mut tags: HashMap<TagName, FixedTagList> = HashMap::new();
+    tags.insert(
+        "bad".parse().unwrap(),
+        FixedTagList::from_vec(vec!["Zeroq".parse().unwrap()]).expect("fixed tag list"),
+    );
+
+    let update_user_tags = UpdateUserTags {
+        org_name: genesis.org_name,
+        user: TestService::chen_ten(),
+        tags,
+    };
+
+    let res = kyc.update_user_tags(ctx, update_user_tags);
+    assert!(res.is_error());
 }
 
 #[test]

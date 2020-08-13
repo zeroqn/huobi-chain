@@ -31,6 +31,9 @@ pub enum ServiceError {
 
     #[display(fmt = "Can not get admin address")]
     CannotGetAdmin,
+
+    #[display(fmt = "Trying insert or update tag not contained in supported_tags")]
+    OutOfSupportedTags,
 }
 
 impl ServiceError {
@@ -45,6 +48,7 @@ impl ServiceError {
             ServiceError::Expression(_) => 107,
             ServiceError::UnapprovedOrg => 108,
             ServiceError::CannotGetAdmin => 109,
+            ServiceError::OutOfSupportedTags => 110,
         }
     }
 }

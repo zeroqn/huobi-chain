@@ -108,7 +108,6 @@ impl DerefMut for TagNameList {
 pub struct KycService<SDK> {
     sdk:            SDK,
     orgs:           Box<dyn StoreMap<OrgName, KycOrgInfo>>,
-    orgs_approved:  Box<dyn StoreMap<OrgName, bool>>,
     user_tag_names: Box<dyn StoreMap<UserTagNamesKey, TagNameList>>,
     user_tags:      Box<dyn StoreMap<UserTagsKey, FixedTagList>>,
 }
@@ -117,14 +116,12 @@ pub struct KycService<SDK> {
 impl<SDK: ServiceSDK> KycService<SDK> {
     pub fn new(mut sdk: SDK) -> Self {
         let orgs = sdk.alloc_or_recover_map("kyc_orgs");
-        let orgs_approved = sdk.alloc_or_recover_map("kyc_orgs_approved");
         let user_tag_names = sdk.alloc_or_recover_map("kyc_user");
         let user_tags = sdk.alloc_or_recover_map("kyc_user_tags");
 
         Self {
             sdk,
             orgs,
-            orgs_approved,
             user_tag_names,
             user_tags,
         }
@@ -144,7 +141,6 @@ impl<SDK: ServiceSDK> KycService<SDK> {
             approved:       true,
         };
         self.orgs.insert(genesis.org_name.to_owned(), org);
-        self.orgs_approved.insert(genesis.org_name.to_owned(), true);
 
         self.sdk
             .set_value(KYC_SERVICE_ADMIN_KEY.to_owned(), genesis.service_admin);
@@ -155,7 +151,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
     fn get_orgs(&self, ctx: ServiceContext) -> ServiceResponse<Vec<OrgName>> {
         let mut org_names = Vec::new();
 
-        for (org_name, _) in self.orgs_approved.iter() {
+        for (org_name, _) in self.orgs.iter() {
             if !ctx.sub_cycles(10_000u64) {
                 return ServiceError::OutOfCycles.into();
             }
@@ -187,8 +183,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         require_org_exists!(self, org_name);
 
         // Impossible, already ensure org exists
-        let mut org = self.orgs.get(&org_name).unwrap();
-        org.approved = self.orgs_approved.get(&org_name).unwrap_or_else(|| false);
+        let org = self.orgs.get(&org_name).unwrap();
 
         ServiceResponse::from_succeed(Some(org))
     }
@@ -281,8 +276,11 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         require_service_admin!(self, &ctx);
         require_org_exists!(self, payload.org_name);
 
-        self.orgs_approved
-            .insert(payload.org_name.clone(), payload.approved);
+        let mut org = self.orgs.get(&payload.org_name).unwrap();
+
+        org.approved = payload.approved;
+
+        self.orgs.insert(payload.org_name.clone(), org);
 
         Self::emit_event(&ctx, "ChangeOrgApproved".to_owned(), payload)
     }
@@ -336,8 +334,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
         if let Err(e) = new_org.validate() {
             return e.into();
-        }
-        if self.orgs.contains(&new_org.name) {
+        } else if self.orgs.contains(&new_org.name) {
             return ServiceError::OrgAlreadyExists.into();
         }
 
@@ -359,7 +356,6 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         };
 
         self.orgs.insert(new_org.name.to_owned(), org);
-        self.orgs_approved.insert(new_org.name.to_owned(), false);
 
         Self::emit_event(&ctx, "RegisterOrg".to_owned(), NewOrgEvent {
             name:           new_org.name,
@@ -374,14 +370,17 @@ impl<SDK: ServiceSDK> KycService<SDK> {
         ctx: ServiceContext,
         payload: UpdateOrgSupportTags,
     ) -> ServiceResponse<()> {
-        require_service_admin!(self, &ctx);
         require_org_exists!(self, payload.org_name);
+
+        // Impossible, already checked by require_org_exists!()
+        let mut org = self.orgs.get(&payload.org_name).unwrap();
+        if org.admin != ctx.get_caller() {
+            return ServiceError::NonAuthorized.into();
+        }
 
         let required_cycles = payload.supported_tags.len() * 10_000;
         sub_cycles!(ctx, required_cycles as u64);
 
-        // Impossible, already checked by require_org_exists!()
-        let mut org = self.orgs.get(&payload.org_name).unwrap();
         org.supported_tags = payload.supported_tags.clone();
         self.orgs.insert(payload.org_name.clone(), org);
 
@@ -397,28 +396,36 @@ impl<SDK: ServiceSDK> KycService<SDK> {
     ) -> ServiceResponse<()> {
         require_org_exists!(self, payload.org_name);
 
-        if !self
-            .orgs_approved
-            .get(&payload.org_name)
-            .unwrap_or_else(|| false)
-        {
-            return ServiceError::UnapprovedOrg.into();
-        }
-
         // Impossible, already checked by require_org_exists!()
         let org = self.orgs.get(&payload.org_name).unwrap();
-        if org.admin != ctx.get_caller() {
+
+        if !org.approved {
+            return ServiceError::UnapprovedOrg.into();
+        } else if org.admin != ctx.get_caller() {
             return ServiceError::NonAuthorized.into();
         }
 
-        // Update tags
-        let tag_names_key = UserTagNamesKey::new(payload.org_name.clone(), payload.user.clone());
+        for (_, tag_name) in payload
+            .tags
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>()
+            .iter()
+            .enumerate()
+        {
+            if !org.supported_tags.contains(tag_name) {
+                return ServiceError::OutOfSupportedTags.into();
+            }
+        }
 
         let tag_names = TagNameList(payload.tags.keys().cloned().collect::<Vec<_>>());
         if tag_names.len() > 0 {
             let required_cycles = tag_names.len() * 10_000;
             sub_cycles!(ctx, required_cycles as u64);
         }
+
+        // Update tags
+        let tag_names_key = UserTagNamesKey::new(payload.org_name.clone(), payload.user.clone());
 
         let mut old_tag_names = self
             .user_tag_names
@@ -477,7 +484,7 @@ impl<SDK: ServiceSDK> ExpressionDataFeed for KycService<SDK> {
         let org_name = kyc.parse()?;
         let tag_name = tag.parse()?;
 
-        if !self.orgs_approved.get(&org_name).unwrap_or_else(|| false) {
+        if !self.orgs.get(&org_name).unwrap().approved {
             return Err("unapproved org");
         }
 

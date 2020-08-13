@@ -83,7 +83,7 @@ payload = '''
 {
    "org_name": "huobi",
    "org_description": "",
-   "org_admin": "hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5",
+   "org_admin": "hb19dddt3retspx298cx9785g27yxxue4k0df2c2y",
    "supported_tags": [ "name", "gender", "age" ],
    "service_admin": "hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5"
 }
