@@ -76,7 +76,7 @@ macro_rules! impl_assets {
     }};
 }
 
-pub trait Assets {
+pub trait AssetInterface {
     fn native_asset(&self, ctx: &ServiceContext) -> Result<Asset, ServiceResponse<()>>;
 
     fn balance(
@@ -102,6 +102,24 @@ pub trait Assets {
         ctx: &ServiceContext,
         payload: HookTransferFromPayload,
     ) -> Result<(), ServiceResponse<()>>;
+
+    fn approve_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: ApprovePayload,
+    ) -> Result<(), ServiceResponse<()>>;
+
+    fn burn_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: BurnAssetPayload,
+    ) -> Result<(), ServiceResponse<()>>;
+
+    fn relay_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: RelayAssetPayload,
+    ) -> Result<(), ServiceResponse<()>>;
 }
 
 pub struct AssetService<SDK> {
@@ -123,7 +141,7 @@ impl<SDK: ServiceSDK> DerefMut for AssetService<SDK> {
     }
 }
 
-impl<SDK: ServiceSDK> Assets for AssetService<SDK> {
+impl<SDK: ServiceSDK> AssetInterface for AssetService<SDK> {
     fn native_asset(&self, ctx: &ServiceContext) -> Result<Asset, ServiceResponse<()>> {
         impl_assets!(self, get_native_asset, ctx)
     }
@@ -158,6 +176,30 @@ impl<SDK: ServiceSDK> Assets for AssetService<SDK> {
         payload: HookTransferFromPayload,
     ) -> Result<(), ServiceResponse<()>> {
         impl_assets!(self, hook_transfer_from, ctx, payload)
+    }
+
+    fn approve_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: ApprovePayload,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_assets!(self, approve, ctx, payload)
+    }
+
+    fn burn_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: BurnAssetPayload,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_assets!(self, burn, ctx, payload)
+    }
+
+    fn relay_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: RelayAssetPayload,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_assets!(self, relay, ctx, payload)
     }
 }
 

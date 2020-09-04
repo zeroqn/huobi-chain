@@ -1,13 +1,45 @@
 use crate::{common, types::ExecPayload, ServiceError};
 
-use asset::Assets;
+use asset::AssetInterface;
+use governance::GovernanceInterface;
+use kyc::KycInterface;
 use protocol::{
     traits::{ServiceResponse, ServiceSDK},
     types::{Address, Hash, ServiceContext},
     Bytes,
 };
+use serde::Serialize;
 
 use std::{cell::RefCell, rc::Rc};
+
+macro_rules! service_read {
+    ($self: expr, $service: ident, $method: ident) => {{
+        let resp = $self.$service.borrow().$method(&$self.ctx);
+        try_encode_service_response(resp)
+    }};
+
+    ($self: expr, $service: ident, $method: ident, $payload: expr) => {{
+        let payload = match serde_json::from_str($payload) {
+            Ok(data) => data,
+            Err(e) => return ServiceError::Serde(e).into(),
+        };
+
+        let resp = $self.$service.borrow().$method(&$self.ctx, payload);
+        try_encode_service_response(resp)
+    }};
+}
+
+macro_rules! service_write {
+    ($self: expr, $service: ident, $method: ident, $payload: expr) => {{
+        let payload = match serde_json::from_str($payload) {
+            Ok(data) => data,
+            Err(e) => return ServiceError::Serde(e).into(),
+        };
+
+        let resp = $self.$service.borrow_mut().$method(&$self.ctx, payload);
+        try_encode_service_response(resp)
+    }};
+}
 
 pub trait ChainInterface {
     fn get_storage(&self, key: &Bytes) -> Bytes;
@@ -55,29 +87,37 @@ impl CycleContext {
     }
 }
 
-pub struct WriteableChain<A, SDK> {
+pub struct WriteableChain<AS, G, K, SDK> {
     ctx:             ServiceContext,
     payload:         ExecPayload,
     sdk:             Rc<RefCell<SDK>>,
-    asset:           Rc<RefCell<A>>,
+    asset:           Rc<RefCell<AS>>,
+    governance:      Rc<RefCell<G>>,
+    kyc:             Rc<RefCell<K>>,
     all_cycles_used: u64,
 }
 
-impl<A, SDK> WriteableChain<A, SDK>
+impl<AS, G, K, SDK> WriteableChain<AS, G, K, SDK>
 where
-    A: Assets,
+    AS: AssetInterface,
+    G: GovernanceInterface,
+    K: KycInterface,
     SDK: ServiceSDK + 'static,
 {
     pub fn new(
         ctx: ServiceContext,
         payload: ExecPayload,
         sdk: Rc<RefCell<SDK>>,
-        asset: Rc<RefCell<A>>,
+        asset: Rc<RefCell<AS>>,
+        governance: Rc<RefCell<G>>,
+        kyc: Rc<RefCell<K>>,
     ) -> Self {
         Self {
             ctx,
             payload,
             asset,
+            governance,
+            kyc,
             sdk,
             all_cycles_used: 0,
         }
@@ -107,11 +147,68 @@ where
     fn contract_key(&self, key: &Bytes) -> Hash {
         common::combine_key(self.payload.address.as_bytes().as_ref(), key)
     }
+
+    fn read_governance(&self, method: &str, _payload: &str) -> ServiceResponse<String> {
+        match method {
+            "get_info" => service_read!(self, governance, get_info),
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
+
+    fn write_governance(&self, method: &str, payload: &str) -> ServiceResponse<String> {
+        match method {
+            "declare_profit" => service_write!(self, governance, declare_profit, payload),
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
+
+    fn read_asset(&self, method: &str, payload: &str) -> ServiceResponse<String> {
+        match method {
+            "native_asset" => service_read!(self, asset, native_asset),
+            "balance" => service_read!(self, asset, balance, payload),
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
+
+    fn write_asset(&self, method: &str, payload: &str) -> ServiceResponse<String> {
+        match method {
+            "transfer_" => service_write!(self, asset, transfer_, payload),
+            "transfer_from_" => service_write!(self, asset, transfer_from_, payload),
+            "approve_" => service_write!(self, asset, approve_, payload),
+            "burn_" => service_write!(self, asset, burn_, payload),
+            "relay_" => service_write!(self, asset, relay_, payload),
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
+
+    fn read_kyc(&self, method: &str, payload: &str) -> ServiceResponse<String> {
+        match method {
+            "get_orgs_" => service_read!(self, kyc, get_orgs_),
+            "get_org_info_" => service_read!(self, kyc, get_org_info_, payload),
+            "get_org_supported_tags_" => service_read!(self, kyc, get_org_supported_tags_, payload),
+            "eval_user_tag_expression_" => {
+                service_read!(self, kyc, eval_user_tag_expression_, payload)
+            }
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
+
+    fn write_kyc(&self, method: &str, payload: &str) -> ServiceResponse<String> {
+        match method {
+            "change_org_approved_" => service_write!(self, kyc, change_org_approved_, payload),
+            "register_org_" => service_write!(self, kyc, register_org_, payload),
+            "update_supported_tags_" => service_write!(self, kyc, update_supported_tags_, payload),
+            "update_user_tags_" => service_write!(self, kyc, update_user_tags_, payload),
+            _ => ServiceError::MethodNotFound.into(),
+        }
+    }
 }
 
-impl<A, SDK> ChainInterface for WriteableChain<A, SDK>
+impl<AS, G, K, SDK> ChainInterface for WriteableChain<AS, G, K, SDK>
 where
-    A: Assets,
+    AS: AssetInterface,
+    G: GovernanceInterface,
+    K: KycInterface,
     SDK: ServiceSDK + 'static,
 {
     fn get_storage(&self, key: &Bytes) -> Bytes {
@@ -146,17 +243,19 @@ where
 
     fn service_read(
         &mut self,
-        _service: &str,
-        _method: &str,
-        _payload: &str,
+        service: &str,
+        method: &str,
+        payload: &str,
         current_cycle: u64,
     ) -> ServiceResponse<(String, u64)> {
         let mut cycle_ctx = CycleContext::new(self.ctx.clone(), self.all_cycles_used);
 
         let resp = Self::serve(&mut cycle_ctx, current_cycle, || -> _ {
-            match self.asset.borrow().native_asset(&self.ctx) {
-                Ok(_) => ServiceResponse::from_succeed("asset".to_owned()),
-                Err(e) => ServiceResponse::from_error(e.code, e.error_message),
+            match service {
+                "asset" => self.read_asset(method, payload),
+                "governance" => self.read_governance(method, payload),
+                "kyc" => self.read_kyc(method, payload),
+                _ => ServiceError::ServiceNotFound.into(),
             }
         });
 
@@ -166,17 +265,19 @@ where
 
     fn service_write(
         &mut self,
-        _service: &str,
-        _method: &str,
-        _payload: &str,
+        service: &str,
+        method: &str,
+        payload: &str,
         current_cycle: u64,
     ) -> ServiceResponse<(String, u64)> {
         let mut cycle_ctx = CycleContext::new(self.ctx.clone(), self.all_cycles_used);
 
         let resp = Self::serve(&mut cycle_ctx, current_cycle, || -> _ {
-            match self.asset.borrow().native_asset(&self.ctx) {
-                Ok(_) => ServiceResponse::from_succeed("asset".to_owned()),
-                Err(e) => ServiceResponse::from_error(e.code, e.error_message),
+            match service {
+                "asset" => self.write_asset(method, payload),
+                "governance" => self.write_governance(method, payload),
+                "kyc" => self.write_kyc(method, payload),
+                _ => ServiceError::ServiceNotFound.into(),
             }
         });
 
@@ -185,30 +286,36 @@ where
     }
 }
 
-pub struct ReadonlyChain<A, SDK> {
-    inner: WriteableChain<A, SDK>,
+pub struct ReadonlyChain<AS, G, K, SDK> {
+    inner: WriteableChain<AS, G, K, SDK>,
 }
 
-impl<A, SDK> ReadonlyChain<A, SDK>
+impl<AS, G, K, SDK> ReadonlyChain<AS, G, K, SDK>
 where
-    A: Assets,
+    AS: AssetInterface,
+    G: GovernanceInterface,
+    K: KycInterface,
     SDK: ServiceSDK + 'static,
 {
     pub fn new(
         ctx: ServiceContext,
         payload: ExecPayload,
         sdk: Rc<RefCell<SDK>>,
-        asset: Rc<RefCell<A>>,
+        asset: Rc<RefCell<AS>>,
+        governance: Rc<RefCell<G>>,
+        kyc: Rc<RefCell<K>>,
     ) -> Self {
         Self {
-            inner: WriteableChain::new(ctx, payload, sdk, asset),
+            inner: WriteableChain::new(ctx, payload, sdk, asset, governance, kyc),
         }
     }
 }
 
-impl<A, SDK> ChainInterface for ReadonlyChain<A, SDK>
+impl<AS, G, K, SDK> ChainInterface for ReadonlyChain<AS, G, K, SDK>
 where
-    A: Assets,
+    AS: AssetInterface,
+    G: GovernanceInterface,
+    K: KycInterface,
     SDK: ServiceSDK + 'static,
 {
     fn get_storage(&self, key: &Bytes) -> Bytes {
@@ -268,4 +375,16 @@ fn decode_json_response(resp: ServiceResponse<(String, u64)>) -> ServiceResponse
     };
 
     ServiceResponse::from_succeed((raw_ret, cycle))
+}
+
+fn try_encode_service_response<T: Serialize>(
+    resp: Result<T, ServiceResponse<()>>,
+) -> ServiceResponse<String> {
+    match resp {
+        Ok(data) => match serde_json::to_string(&data) {
+            Ok(json_string) => ServiceResponse::from_succeed(json_string),
+            Err(err) => ServiceError::Serde(err).into(),
+        },
+        Err(err) => ServiceResponse::from_error(err.code, err.error_message),
+    }
 }

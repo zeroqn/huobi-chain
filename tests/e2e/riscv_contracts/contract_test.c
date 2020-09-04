@@ -6,11 +6,11 @@
 
 uint64_t test_service_call_read_fail() {
     const char* service = "asset";
-    const char* method = "get_balance";
+    const char* method = "balance";
     const char* payload = "{\"asset_id\":\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\", \"user\":\"0xf8389d774afdad8755ef8e629e5a154fddc6325a\"}";
 
     uint8_t ret[1000] = {0};
-    uint64_t ret_len = pvm_service_call(service, method,
+    uint64_t ret_len = pvm_service_write(service, method,
                           payload,  strlen(payload),
                           ret);
     pvm_debug(ret);
@@ -20,8 +20,8 @@ uint64_t test_service_call_read_fail() {
 
 uint64_t test_service_read() {
     const char* service = "asset";
-    const char* method = "get_balance";
-    const char* payload = "{\"asset_id\":\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\", \"user\":\"0xf8389d774afdad8755ef8e629e5a154fddc6325a\"}";
+    const char* method = "balance";
+    const char* payload = "{\"asset_id\":\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\", \"user\":\"hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5\"}";
 
     uint8_t ret[1000] = {0};
     uint64_t ret_len = pvm_service_read(service, method,
@@ -34,8 +34,8 @@ uint64_t test_service_read() {
 
 uint64_t test_transfer_from_contract() {
     const char* service = "asset";
-    const char* method = "transfer";
-    const char* payload = "{\"asset_id\":\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\", \"to\":\"0x0000000000000000000000000000000000000001\", \"value\": 100, \"memo\": \"tt\"}";
+    const char* method = "transfer_";
+    const char* payload = "{\"asset_id\":\"0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c\", \"to\":\"hb19dddt3retspx298cx9785g27yxxue4k0df2c2y\", \"value\": 100, \"memo\": \"tt\"}";
 
     uint8_t ret[1000] = {0};
     uint64_t ret_len = pvm_service_call(service, method,
@@ -48,8 +48,8 @@ uint64_t test_transfer_from_contract() {
 
 uint64_t test_accumulate_profits_contract() {
     const char* service = "governance";
-    const char* method = "accumulate_profit";
-    const char* payload = "{\"address\":\"0xf8389d774afdad8755ef8e629e5a154fddc6325a\", \"accumulated_profit\": 876544545}";
+    const char* method = "declare_profit";
+    const char* payload = "{\"address\":\"hb19dddt3retspx298cx9785g27yxxue4k0df2c2y\", \"accumulated_profit\": 876544545}";
 
     uint8_t ret[1000] = {0};
     uint64_t ret_len = pvm_service_call(service, method,

@@ -1,4 +1,4 @@
-use admission_control::AdmissionControl;
+use admission_control::AdmissionControlInterface;
 use binding_macro::{cycles, service};
 use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK};
 use protocol::types::{ServiceContext, SignedTransaction};
@@ -16,7 +16,7 @@ pub struct AuthorizationService<AC, SDK> {
 #[service]
 impl<AC, SDK> AuthorizationService<AC, SDK>
 where
-    AC: AdmissionControl,
+    AC: AdmissionControlInterface,
     SDK: ServiceSDK,
 {
     pub fn new(_sdk: SDK, multi_sig: MultiSignatureService<SDK>, admission_control: AC) -> Self {

@@ -165,7 +165,7 @@ describe('riscv service', () => {
     const contractAddress = await deploy(code.toString('hex'), '');
     await approve_contracts(contractAddress);
     // contract call
-    await exec(contractAddress, 'test_service_call_read_fail', riscvService, 0x2);
+    await exec(contractAddress, 'test_service_call_read_fail', riscvService, 115);
     await call(contractAddress, 'test_service_read');
     // transfer to contract
     const amount = 0x768762;
@@ -173,7 +173,7 @@ describe('riscv service', () => {
     const balance = await get_balance(contractAddress);
     expect(balance.minus(amount).eq(0)).toBe(true);
 
-    const recipientAddress = '0x0000000000000000000000000000000000000001';
+    const recipientAddress = 'hb19dddt3retspx298cx9785g27yxxue4k0df2c2y';
     const balance_before = await get_balance(recipientAddress);
     // transfer 100 from contract to recipientAddress via contract
     await exec(contractAddress, 'test_transfer_from_contract');

@@ -65,6 +65,71 @@ macro_rules! sub_cycles {
     };
 }
 
+macro_rules! impl_kyc {
+    ($self: expr, $method: ident, $ctx: expr) => {{
+        let res = $self.$method($ctx.clone());
+        if res.is_error() {
+            Err(ServiceResponse::from_error(res.code, res.error_message))
+        } else {
+            Ok(res.succeed_data)
+        }
+    }};
+    ($self: expr, $method: ident, $ctx: expr, $payload: expr) => {{
+        let res = $self.$method($ctx.clone(), $payload);
+        if res.is_error() {
+            Err(ServiceResponse::from_error(res.code, res.error_message))
+        } else {
+            Ok(res.succeed_data)
+        }
+    }};
+}
+
+pub trait KycInterface {
+    fn get_orgs_(&self, ctx: &ServiceContext) -> Result<Vec<OrgName>, ServiceResponse<()>>;
+
+    fn get_org_info_(
+        &self,
+        ctx: &ServiceContext,
+        org_name: OrgName,
+    ) -> Result<Option<KycOrgInfo>, ServiceResponse<()>>;
+
+    fn get_org_supported_tags_(
+        &self,
+        ctx: &ServiceContext,
+        org_name: OrgName,
+    ) -> Result<Vec<TagName>, ServiceResponse<()>>;
+
+    fn eval_user_tag_expression_(
+        &self,
+        ctx: &ServiceContext,
+        payload: EvalUserTagExpression,
+    ) -> Result<bool, ServiceResponse<()>>;
+
+    fn change_org_approved_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: ChangeOrgApproved,
+    ) -> Result<(), ServiceResponse<()>>;
+
+    fn register_org_(
+        &mut self,
+        ctx: &ServiceContext,
+        new_org: RegisterNewOrg,
+    ) -> Result<(), ServiceResponse<()>>;
+
+    fn update_supported_tags_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: UpdateOrgSupportTags,
+    ) -> Result<(), ServiceResponse<()>>;
+
+    fn update_user_tags_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: UpdateUserTags,
+    ) -> Result<(), ServiceResponse<()>>;
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, RlpFixedCodec, Constructor)]
 struct UserTagNamesKey {
     org_name: OrgName,
@@ -110,6 +175,68 @@ pub struct KycService<SDK> {
     orgs:           Box<dyn StoreMap<OrgName, KycOrgInfo>>,
     user_tag_names: Box<dyn StoreMap<UserTagNamesKey, TagNameList>>,
     user_tags:      Box<dyn StoreMap<UserTagsKey, FixedTagList>>,
+}
+
+impl<SDK: ServiceSDK> KycInterface for KycService<SDK> {
+    fn get_orgs_(&self, ctx: &ServiceContext) -> Result<Vec<OrgName>, ServiceResponse<()>> {
+        impl_kyc!(self, get_orgs, ctx)
+    }
+
+    fn get_org_info_(
+        &self,
+        ctx: &ServiceContext,
+        org_name: OrgName,
+    ) -> Result<Option<KycOrgInfo>, ServiceResponse<()>> {
+        impl_kyc!(self, get_org_info, ctx, org_name)
+    }
+
+    fn get_org_supported_tags_(
+        &self,
+        ctx: &ServiceContext,
+        org_name: OrgName,
+    ) -> Result<Vec<TagName>, ServiceResponse<()>> {
+        impl_kyc!(self, get_org_supported_tags, ctx, org_name)
+    }
+
+    fn register_org_(
+        &mut self,
+        ctx: &ServiceContext,
+        new_org: RegisterNewOrg,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_kyc!(self, register_org, ctx, new_org)
+    }
+
+    fn update_supported_tags_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: UpdateOrgSupportTags,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_kyc!(self, update_supported_tags, ctx, payload)
+    }
+
+    fn update_user_tags_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: UpdateUserTags,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_kyc!(self, update_user_tags, ctx, payload)
+    }
+
+    fn eval_user_tag_expression_(
+        &self,
+        ctx: &ServiceContext,
+        payload: EvalUserTagExpression,
+    ) -> Result<bool, ServiceResponse<()>> {
+        impl_kyc!(self, eval_user_tag_expression, ctx, payload)
+    }
+
+    fn change_org_approved_(
+        &mut self,
+        ctx: &ServiceContext,
+        payload: ChangeOrgApproved,
+    ) -> Result<(), ServiceResponse<()>> {
+        impl_kyc!(self, change_org_approved, ctx, payload)
+    }
 }
 
 #[service]

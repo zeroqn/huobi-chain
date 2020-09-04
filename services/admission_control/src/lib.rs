@@ -3,10 +3,10 @@ mod tests;
 mod types;
 
 use asset::types::GetBalancePayload;
-use asset::Assets;
+use asset::AssetInterface;
 use binding_macro::{cycles, genesis, service, write};
 use derive_more::Display;
-use governance::Governance;
+use governance::GovernanceInterface;
 use protocol::{
     traits::{ExecutorParams, ServiceResponse, ServiceSDK, StoreMap},
     types::{Address, ServiceContext, SignedTransaction},
@@ -50,7 +50,7 @@ macro_rules! sub_cycles {
 
 pub const ADMISSION_CONTROL_SERVICE_NAME: &str = "admission_control";
 
-pub trait AdmissionControl {
+pub trait AdmissionControlInterface {
     fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> Result<(), String>;
 }
 
@@ -108,10 +108,10 @@ pub struct AdmissionControlService<A, G, SDK> {
     governance: G,
 }
 
-impl<A, G, SDK> AdmissionControl for AdmissionControlService<A, G, SDK>
+impl<A, G, SDK> AdmissionControlInterface for AdmissionControlService<A, G, SDK>
 where
-    A: Assets,
-    G: Governance,
+    A: AssetInterface,
+    G: GovernanceInterface,
     SDK: ServiceSDK + 'static,
 {
     fn is_allowed(&self, ctx: &ServiceContext, payload: SignedTransaction) -> Result<(), String> {
@@ -127,8 +127,8 @@ where
 #[service]
 impl<A, G, SDK> AdmissionControlService<A, G, SDK>
 where
-    A: Assets,
-    G: Governance,
+    A: AssetInterface,
+    G: GovernanceInterface,
     SDK: ServiceSDK + 'static,
 {
     pub fn new(mut sdk: SDK, asset: A, governance: G) -> Self {

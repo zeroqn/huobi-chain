@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests;
-mod types;
+pub mod types;
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -10,7 +10,7 @@ use derive_more::{Display, From};
 use serde::Serialize;
 
 use asset::types::{Asset, HookTransferFromPayload};
-use asset::Assets;
+use asset::AssetInterface;
 use binding_macro::{
     cycles, genesis, hook_after, hook_before, service, tx_hook_after, tx_hook_before,
 };
@@ -75,7 +75,7 @@ macro_rules! impl_governance {
     }};
 }
 
-pub trait Governance {
+pub trait GovernanceInterface {
     fn get_info(&self, ctx: &ServiceContext) -> Result<GovernanceInfo, ServiceResponse<()>>;
 
     fn declare_profit(
@@ -94,9 +94,9 @@ pub struct GovernanceService<A, M, SDK> {
     metadata: M,
 }
 
-impl<A, M, SDK> Governance for GovernanceService<A, M, SDK>
+impl<A, M, SDK> GovernanceInterface for GovernanceService<A, M, SDK>
 where
-    A: Assets,
+    A: AssetInterface,
     M: MetaData,
     SDK: ServiceSDK,
 {
@@ -116,7 +116,7 @@ where
 #[service]
 impl<A, M, SDK> GovernanceService<A, M, SDK>
 where
-    A: Assets,
+    A: AssetInterface,
     M: MetaData,
     SDK: ServiceSDK,
 {

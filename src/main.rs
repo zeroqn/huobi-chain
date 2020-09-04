@@ -11,6 +11,7 @@ use governance::{GovernanceService, GOVERNANCE_SERVICE_NAME};
 use kyc::{KycService, KYC_SERVICE_NAME};
 use metadata::{MetadataService, METADATA_SERVICE_NAME};
 use multi_signature::{MultiSignatureService, MULTI_SIG_SERVICE_NAME};
+use riscv::{RiscvService, RISCV_SERVICE_NAME};
 
 type AuthorizationEntity<T> = AuthorizationService<
     AdmissionControlService<
@@ -24,6 +25,13 @@ type AuthorizationEntity<T> = AuthorizationService<
 type AdmissionControlEntity<T> = AdmissionControlService<
     AssetService<T>,
     GovernanceService<AssetService<T>, MetadataService<T>, T>,
+    T,
+>;
+
+type RiscvEntity<T> = RiscvService<
+    AssetService<T>,
+    GovernanceService<AssetService<T>, MetadataService<T>, T>,
+    KycService<T>,
     T,
 >;
 
@@ -47,6 +55,7 @@ impl ServiceMapping for DefaultServiceMapping {
             METADATA_SERVICE_NAME => Box::new(Self::new_metadata(factory)?) as Box<dyn Service>,
             KYC_SERVICE_NAME => Box::new(Self::new_kyc(factory)?) as Box<dyn Service>,
             MULTI_SIG_SERVICE_NAME => Box::new(Self::new_multi_sig(factory)?) as Box<dyn Service>,
+            RISCV_SERVICE_NAME => Box::new(Self::new_riscv(factory)?) as Box<dyn Service>,
             _ => panic!("not found service"),
         };
 
@@ -62,6 +71,7 @@ impl ServiceMapping for DefaultServiceMapping {
             MULTI_SIG_SERVICE_NAME.to_owned(),
             GOVERNANCE_SERVICE_NAME.to_owned(),
             ADMISSION_CONTROL_SERVICE_NAME.to_owned(),
+            RISCV_SERVICE_NAME.to_owned(),
         ]
     }
 }
@@ -126,6 +136,21 @@ impl DefaultServiceMapping {
             factory.get_sdk("authorization")?,
             multi_sig,
             admission_control,
+        ))
+    }
+
+    fn new_riscv<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<RiscvEntity<SDK>> {
+        let asset = Self::new_asset(factory)?;
+        let governance = Self::new_governance(factory)?;
+        let kyc = Self::new_kyc(factory)?;
+
+        Ok(RiscvService::init(
+            factory.get_sdk("riscv")?,
+            asset,
+            governance,
+            kyc,
         ))
     }
 }

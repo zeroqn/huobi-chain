@@ -5,9 +5,11 @@ pub mod error;
 pub mod types;
 pub mod vm;
 
-use asset::Assets;
+use asset::AssetInterface;
 use authorization::Authorization;
 use error::ServiceError;
+use governance::GovernanceInterface;
+use kyc::KycInterface;
 use types::{
     AddressList, Authorizer, Contract, DeployPayload, DeployResp, ExecPayload, GetContractPayload,
     GetContractResp, InitGenesisPayload,
@@ -59,27 +61,35 @@ macro_rules! require_approved {
     };
 }
 
-pub struct RiscvService<A, SDK> {
+pub struct RiscvService<AS, G, K, SDK> {
     sdk:           Rc<RefCell<SDK>>,
-    asset:         Rc<RefCell<A>>,
+    asset:         Rc<RefCell<AS>>,
+    governance:    Rc<RefCell<G>>,
+    kyc:           Rc<RefCell<K>>,
     authorization: Authorization,
 }
 
 #[service]
-impl<A, SDK> RiscvService<A, SDK>
+impl<AS, G, K, SDK> RiscvService<AS, G, K, SDK>
 where
-    A: Assets + 'static,
+    AS: AssetInterface + 'static,
+    G: GovernanceInterface + 'static,
+    K: KycInterface + 'static,
     SDK: ServiceSDK + 'static,
 {
-    pub fn init(sdk: SDK, asset: A) -> Self {
+    pub fn init(sdk: SDK, asset: AS, governance: G, kyc: K) -> Self {
         let sdk = Rc::new(RefCell::new(sdk));
         let asset = Rc::new(RefCell::new(asset));
         let authorization = Authorization::new(&sdk);
+        let governance = Rc::new(RefCell::new(governance));
+        let kyc = Rc::new(RefCell::new(kyc));
 
         Self {
             sdk,
             asset,
             authorization,
+            governance,
+            kyc,
         }
     }
 
@@ -122,6 +132,8 @@ where
             payload,
             Rc::<_>::clone(&self.sdk),
             Rc::<_>::clone(&self.asset),
+            Rc::<_>::clone(&self.governance),
+            Rc::<_>::clone(&self.kyc),
         )));
 
         self.run_interpreter(ctx, contract, readonly_chain, intp_params)
@@ -219,6 +231,8 @@ where
             payload,
             Rc::<_>::clone(&self.sdk),
             Rc::<_>::clone(&self.asset),
+            Rc::<_>::clone(&self.governance),
+            Rc::<_>::clone(&self.kyc),
         )));
 
         self.run_interpreter(ctx, contract, writeable_chain, intp_params)
@@ -329,6 +343,8 @@ where
             init_payload,
             Rc::<_>::clone(&self.sdk),
             Rc::<_>::clone(&self.asset),
+            Rc::<_>::clone(&self.governance),
+            Rc::<_>::clone(&self.kyc),
         )));
 
         let resp = self.run_interpreter(ctx, contract, writeable_chain, intp_params);

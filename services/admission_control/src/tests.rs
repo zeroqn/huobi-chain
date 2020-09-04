@@ -1,6 +1,6 @@
 // use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc};
 
-// use asset::{AssetService, Assets};
+// use asset::{AssetService, AssetInterface};
 // use cita_trie::MemoryDB;
 // use core_storage::{adapter::memory::MemoryAdapter, ImplStorage};
 // use framework::binding::{
