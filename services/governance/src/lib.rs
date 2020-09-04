@@ -172,6 +172,32 @@ where
 
     #[cycles(210_00)]
     #[read]
+    fn get_miner_profit_outlet_address(&self, ctx: ServiceContext) -> ServiceResponse<Address> {
+        let miner_profit_outlet_address = self
+            .sdk
+            .get_value::<_, Address>(&MINER_PROFIT_OUTLET_KEY.to_owned());
+        if let Some(addr) = miner_profit_outlet_address {
+            ServiceResponse::from_succeed(addr)
+        } else {
+            ServiceError::MissingInfo.into()
+        }
+    }
+
+    #[cycles(210_00)]
+    #[read]
+    fn get_miner_charge_map(&self, ctx: ServiceContext) -> ServiceResponse<Vec<MinerChargeConfig>> {
+        let mut miner_charge_map: Vec<MinerChargeConfig> = Vec::new();
+        for miner in self.miners.iter() {
+            miner_charge_map.push(MinerChargeConfig {
+                address:              miner.0,
+                miner_charge_address: miner.1,
+            })
+        }
+        ServiceResponse::from_succeed(miner_charge_map)
+    }
+
+    #[cycles(210_00)]
+    #[read]
     fn get_tx_failure_fee(&self, ctx: ServiceContext) -> ServiceResponse<u64> {
         let info = get_info!(self);
         ServiceResponse::from_succeed(info.tx_failure_fee)
