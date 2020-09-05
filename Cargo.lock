@@ -341,22 +341,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "antidote"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34fde25430d87a9388dadbe6e34d7f72a462c8b43ac8d309b42b0a8505d7e2a5"
-
-[[package]]
 name = "anyhow"
 version = "1.0.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b602bfe940d21c130f3895acd65221e8a61270debe89d628b9cb4e3ccb8569b"
-
-[[package]]
-name = "arc-swap"
-version = "0.3.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc4662175ead9cd84451d5c35070517777949a2ed84551764129cedb88384841"
 
 [[package]]
 name = "arc-swap"
@@ -366,8 +354,8 @@ checksum = "4d25d88fd6b8041580a654f9d0c581a047baee2b3efee13275f2fc392fc75034"
 
 [[package]]
 name = "asset"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -558,8 +546,8 @@ dependencies = [
 
 [[package]]
 name = "binding-macro"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "derive_more 0.15.0",
  "muta-protocol",
@@ -693,7 +681,7 @@ dependencies = [
 [[package]]
 name = "byzantine"
 version = "0.0.1-alpha.0"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "actix-rt",
  "async-trait",
@@ -846,7 +834,7 @@ dependencies = [
 [[package]]
 name = "common-apm"
 version = "0.1.0"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "derive_more 0.99.9",
  "lazy_static",
@@ -858,8 +846,8 @@ dependencies = [
 
 [[package]]
 name = "common-config-parser"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "reqwest",
  "serde",
@@ -870,8 +858,8 @@ dependencies = [
 
 [[package]]
 name = "common-crypto"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "ophelia",
  "ophelia-bls-amcl",
@@ -880,18 +868,23 @@ dependencies = [
 
 [[package]]
 name = "common-logger"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
+ "chrono",
+ "creep",
  "json",
  "log",
  "log4rs",
+ "rustracing_jaeger 0.5.0",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]
 name = "common-merkle"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "muta-protocol",
  "rayon",
@@ -934,8 +927,8 @@ checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 
 [[package]]
 name = "core-api"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "actix-web",
  "async-trait",
@@ -958,8 +951,8 @@ dependencies = [
 
 [[package]]
 name = "core-consensus"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "async-trait",
  "bincode",
@@ -1006,8 +999,8 @@ checksum = "b3a71ab494c0b5b860bdc8407ae08978052417070c2ced38573a9157ad75b8ac"
 
 [[package]]
 name = "core-mempool"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "async-trait",
  "bytes 0.5.6",
@@ -1033,10 +1026,10 @@ dependencies = [
 
 [[package]]
 name = "core-network"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
- "arc-swap 0.4.7",
+ "arc-swap",
  "async-trait",
  "bincode",
  "bs58",
@@ -1063,8 +1056,8 @@ dependencies = [
 
 [[package]]
 name = "core-storage"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "async-trait",
  "common-apm",
@@ -1376,10 +1369,10 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "framework"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
- "asset 0.2.0-rc",
+ "asset 0.2.0-rc.2.1",
  "byteorder",
  "bytes 0.5.6",
  "cita_trie",
@@ -1393,7 +1386,7 @@ dependencies = [
  "log",
  "lru",
  "lru-cache",
- "metadata 0.2.0-rc",
+ "metadata 0.2.0-rc.2.1",
  "muta-protocol",
  "parking_lot 0.11.0",
  "rand 0.7.3",
@@ -2134,12 +2127,11 @@ checksum = "a94d21414c1f4a51209ad204c1776a3d0765002c76c6abcb602a6f09f1e881c7"
 
 [[package]]
 name = "log4rs"
-version = "0.8.3"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "100052474df98158c0738a7d3f4249c99978490178b5f9f68cd835ac57adbd1b"
+checksum = "e1e1ad45e4584824d760c35d71868dd7e6e5acd8f5195a9573743b369fc86cd6"
 dependencies = [
- "antidote",
- "arc-swap 0.3.11",
+ "arc-swap",
  "chrono",
  "flate2",
  "fnv",
@@ -2147,6 +2139,7 @@ dependencies = [
  "libc",
  "log",
  "log-mdc",
+ "parking_lot 0.11.0",
  "serde",
  "serde-value",
  "serde_derive",
@@ -2220,8 +2213,8 @@ dependencies = [
 
 [[package]]
 name = "metadata"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -2337,8 +2330,8 @@ dependencies = [
 
 [[package]]
 name = "multi-signature"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "binding-macro",
  "byteorder",
@@ -2357,8 +2350,8 @@ dependencies = [
 
 [[package]]
 name = "muta"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "actix-rt",
  "backtrace",
@@ -2405,7 +2398,7 @@ dependencies = [
  "muta-apm-derive",
  "parking_lot 0.10.2",
  "rustracing",
- "rustracing_jaeger",
+ "rustracing_jaeger 0.4.1",
 ]
 
 [[package]]
@@ -2433,10 +2426,10 @@ dependencies = [
 
 [[package]]
 name = "muta-protocol"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
- "arc-swap 0.4.7",
+ "arc-swap",
  "async-trait",
  "bech32",
  "bincode",
@@ -3408,6 +3401,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustracing_jaeger"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49ab93761090efbf579379a9c035976de57df824fb21ae8fe48c912231a3ad28"
+dependencies = [
+ "crossbeam-channel",
+ "hostname",
+ "percent-encoding 2.1.0",
+ "rand 0.7.3",
+ "rustracing",
+ "thrift_codec",
+ "trackable",
+]
+
+[[package]]
 name = "rustversion"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3540,9 +3548,9 @@ dependencies = [
 
 [[package]]
 name = "serde-value"
-version = "0.5.3"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a663f873dedc4eac1a559d4c6bc0d0b2c34dc5ac4702e105014b8281489e44f"
+checksum = "5a65a7291a8a568adcae4c10a677ebcedbc6c9cec91c054dee2ce40b0e3290eb"
 dependencies = [
  "ordered-float",
  "serde",
@@ -3649,7 +3657,7 @@ version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e12110bc539e657a646068aaf5eb5b63af9d0c1f7b29c97113fad80e15f035"
 dependencies = [
- "arc-swap 0.4.7",
+ "arc-swap",
  "libc",
 ]
 
@@ -4413,8 +4421,8 @@ dependencies = [
 
 [[package]]
 name = "util"
-version = "0.2.0-rc"
-source = "git+https://github.com/nervosnetwork/muta?rev=b7ceda0#b7ceda00a65ebe87b500e5b0c489e5325e22747a"
+version = "0.2.0-rc.2.1"
+source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0-rc.2.1#9fa17d795dc2e27e9a59753d86b03805c7fe1c5e"
 dependencies = [
  "binding-macro",
  "byteorder",

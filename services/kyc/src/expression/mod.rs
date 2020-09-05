@@ -41,7 +41,7 @@ pub fn evaluate<DF: ExpressionDataFeed>(
 }
 
 // s.t. regexp /^[a-zA-Z][a-zA-Z\d_]{0,31}}/
-pub fn validate_ident_value(ident: String) -> bool {
+pub fn validate_ident(ident: String) -> bool {
     if ident.chars().count() > 32 || ident.chars().count() == 0 {
         return false;
     }
@@ -66,7 +66,7 @@ pub fn validate_values_query(kyc_tag_values: Vec<String>) -> bool {
     }
 
     for value in kyc_tag_values {
-        if !validate_ident_value(value.clone()) {
+        if !validate_ident(value.clone()) {
             return false;
         }
 

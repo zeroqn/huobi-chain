@@ -10,7 +10,7 @@ const kycServiceAdmin = new KycService(adminClient, admin);
 const kycServiceOrgAdmin = new KycService(orgAdminClient, orgAdmin);
 
 async function register_org(service = kycServiceAdmin, expectCode = 0, nameLen = 12, tagNum = 3, tagLen = 12) {
-  const orgName = genRandomString('', nameLen);
+  const orgName = genRandomString('a', nameLen);
 
   // pre-check
   const res0 = await service.read.get_org_info(orgName);
@@ -94,8 +94,10 @@ async function update_user_tags(orgName: string, supportedTags: Array<string>, s
   const user = genRandomAccount().address;
 
   const tags = <Record<string, Array<string>>>{};
+  // set value of each tag
+  // value should be an array of string
   supportedTags.map((tag) => {
-    tags[tag] = genRandomStrings(valNum, '', valLen);
+    tags[tag] = genRandomStrings(valNum, 'm', valLen);
   });
 
   const res0 = await service.write.update_user_tags({
@@ -274,15 +276,19 @@ describe('kyc service API test via huobi-sdk-js', () => {
     const { values } = res1;
     // test basic expression
     const expression_0 = `${orgName}.${supportedTags[0]}@\`${values[supportedTags[0]][0]}\``;
-    eval_user_tag_expression(user, expression_0, 0, true);
+    await eval_user_tag_expression(user, expression_0, 0, true);
+
     const randomAddress = genRandomAccount().address;
-    eval_user_tag_expression(randomAddress, expression_0, 0, false);
+    await eval_user_tag_expression(randomAddress, expression_0, 0, false);
+
     const expression_1 = `${orgName}.${supportedTags[0]}@\`${values[supportedTags[1]][0]}\``;
-    eval_user_tag_expression(user, expression_1, 0, false);
+    await eval_user_tag_expression(user, expression_1, 0, false);
+
     // test complex expression
     const expression_2 = `(${orgName}.${supportedTags[0]}@\`${values[supportedTags[0]][0]
     }\` || ${orgName}.${supportedTags[1]}@\`${values[supportedTags[0]][0]}\`) && ${
       orgName}.${supportedTags[2]}@\`${values[supportedTags[2]][2]}\``;
-    eval_user_tag_expression(user, expression_2, 0, true);
+    await eval_user_tag_expression(user, expression_2, 0, true);
+
   });
 });

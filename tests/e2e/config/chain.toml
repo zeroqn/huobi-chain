@@ -16,6 +16,10 @@ max_payload_size = 10485760  # 10MB
 listening_address = "0.0.0.0:1337"
 rpc_timeout = 10
 
+[consensus]
+overlord_gap = 5
+sync_txs_chunk_size = 5000
+
 [mempool]
 pool_size = 20000
 broadcast_txs_size = 200
@@ -32,6 +36,7 @@ console_show_file_and_line = false
 log_path = "./target/tests/e2e/logs/"
 log_to_file = true
 metrics = true
+file_size_limit = 1073741824 # 1 GiB
 modules_level = { riscv_debug = "debug" }
 
 [rocksdb]

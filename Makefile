@@ -75,8 +75,6 @@ e2e-test:
 	cargo build --release
 	rm -rf ./target/tests/e2e/data
 	rm -rf /tmp/log
-	export MUTA_ADDRESS_HRP=hb
-	export MUTA_GRAPHQL_CALLER=hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5
 	./target/release/huobi-chain -c tests/e2e/config/chain.toml -g tests/e2e/config/genesis.toml > /tmp/log 2>&1 &
 	cd tests/e2e && yarn && ./wait-for-it.sh -t 300 localhost:8000 -- yarn run test
 	pkill -2 huobi-chain

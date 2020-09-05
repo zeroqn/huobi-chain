@@ -66,16 +66,16 @@ payload = '''
 }
 '''
 
-# # you can enable whitelist in riscv with init payload below
-# [[services]]
-# name = 'riscv'
-# payload = '''
-# {
-#     "enable_authorization": true,
-#     "admins": ["muta1elcsqgg8zp2xp9ql09uz3argvea2rgkmglwr47"],
-#     "deploy_auth": ["muta1nnx2ewu2fvp484pp8psnktdh944xv885nkwpvu"]
-# }
-# '''
+ # you can enable whitelist in riscv with init payload below
+ [[services]]
+ name = 'riscv'
+ payload = '''
+ {
+     "enable_authorization": true,
+     "admin": "muta1elcsqgg8zp2xp9ql09uz3argvea2rgkmglwr47",
+     "deploy_auth": ["muta1nnx2ewu2fvp484pp8psnktdh944xv885nkwpvu"]
+ }
+ '''
 
 [[services]]
 name = "kyc"

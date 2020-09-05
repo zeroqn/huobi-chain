@@ -2,9 +2,7 @@ use protocol::types::Address;
 
 use crate::expression::traits::ExpressionDataFeed;
 use crate::expression::types::{CalcContext, CalcValue, Node, Token};
-use crate::expression::{
-    validate_ident_value, validate_values_query, ExpressionError, ExpressionResult,
-};
+use crate::expression::{validate_ident, validate_values_query, ExpressionError, ExpressionResult};
 
 pub struct CalcError(&'static str);
 
@@ -64,7 +62,7 @@ impl<'a, DF: ExpressionDataFeed> CalcContext<'a, DF> {
         let left = if let Some(kyc_node) = dot_node.left.as_ref() {
             match self.calc(kyc_node)? {
                 CalcValue::Ident(str) => {
-                    if !validate_ident_value(str.clone()) {
+                    if !validate_ident(str.clone()) {
                         return Err(CalcError("dot left param KYC is incorrect"));
                     }
                     str
@@ -78,7 +76,7 @@ impl<'a, DF: ExpressionDataFeed> CalcContext<'a, DF> {
         let right = if let Some(tag_node) = dot_node.right.as_ref() {
             match self.calc(tag_node)? {
                 CalcValue::Ident(str) => {
-                    if !validate_ident_value(str.clone()) {
+                    if !validate_ident(str.clone()) {
                         return Err(CalcError("dot right param TAG is incorrect"));
                     }
                     str
@@ -118,7 +116,7 @@ impl<'a, DF: ExpressionDataFeed> CalcContext<'a, DF> {
         let value = if let Some(value_node) = has_node.right.as_ref() {
             match self.calc(value_node)? {
                 CalcValue::Value(val) => {
-                    if !validate_ident_value(val.clone()) {
+                    if !validate_ident(val.clone()) {
                         return Err(CalcError("has operation right param `Value` is incorrect"));
                     }
 

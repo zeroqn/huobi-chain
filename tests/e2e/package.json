@@ -8,7 +8,8 @@
     "test": "MUTA_ADDRESS_HRP=hb MUTA_GRAPHQL_CALLER=hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5 jest --color",
     "lint": "eslint --fix '*.{js,ts}'",
     "prettier": "prettier --write **/*.{js,ts,graphql}",
-    "compile": "tsc"
+    "compile": "tsc",
+    "a": "MUTA_ADDRESS_HRP=hb MUTA_GRAPHQL_CALLER=hb10e0525sfrf53yh2aljmm3sn9jq5njk7lsekwy5 jest --color src/riscv.test.ts"
   },
   "dependencies": {
     "@types/jest": "^24.0.0",
