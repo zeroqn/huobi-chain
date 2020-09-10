@@ -128,11 +128,11 @@ where
         current_cycle: u64,
         mut f: F,
     ) -> ServiceResponse<(String, u64)> {
-        let vm_cycle = current_cycle.wrapping_sub(cycle_ctx.all_cycles_used);
-        if vm_cycle != 0 {
-            crate::sub_cycles!(cycle_ctx.inner, vm_cycle);
-        } else {
+        let (vm_cycle, overflow) = current_cycle.overflowing_sub(cycle_ctx.all_cycles_used);
+        if overflow {
             return ServiceError::OutOfCycles.into();
+        } else {
+            crate::sub_cycles!(cycle_ctx.inner, vm_cycle);
         }
 
         let resp = f();

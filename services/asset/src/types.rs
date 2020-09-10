@@ -26,9 +26,15 @@ impl IssuerWithBalance {
         IssuerWithBalance { addr, balance }
     }
 
-    pub fn verify(&self) -> Result<(), &'static str> {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        if self.balance == 0 {
+            return Err(ServiceError::MeaningLessValue(
+                "issuer's balance".to_string(),
+            ));
+        }
+
         if self.addr == Address::default() {
-            Err("invalid issuer")
+            Err(ServiceError::MeaningLessValue("issuer's addr".to_string()))
         } else {
             Ok(())
         }
@@ -49,32 +55,25 @@ pub struct InitGenesisPayload {
 }
 
 impl InitGenesisPayload {
-    pub fn verify(&self) -> Result<(), &'static str> {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_asset_name(&self.name)?;
+        verify_asset_symbol(&self.symbol)?;
+
         if self.id == Hash::default() {
-            return Err("invalid asset id");
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
         }
-        if self
-            .init_mints
-            .iter()
-            .any(|issuer| issuer.verify().is_err())
-        {
-            return Err("invalid issuer");
-        }
+
         if self.admin == Address::default() {
-            return Err("invalid admin");
+            return Err(ServiceError::MeaningLessValue("admin".to_string()));
         }
 
-        let mut total_balance = 0u64;
-        for addr in self.init_mints.iter() {
-            let (checked_value, overflow) = total_balance.overflowing_add(addr.balance);
-            if overflow {
-                return Err("sum of issuers balance overflow");
-            }
-
-            total_balance = checked_value;
+        if self.supply == 0 {
+            return Err(ServiceError::MeaningLessValue("supply".to_string()));
         }
-        if total_balance != self.supply {
-            return Err("sum of issuers balance isn't equal to supply");
+
+        let mint_balance = verify_issuers(&self.init_mints)?;
+        if mint_balance != self.supply {
+            return Err(ServiceError::MintNotEqualSupply);
         }
 
         Ok(())
@@ -92,9 +91,36 @@ pub struct CreateAssetPayload {
     pub relayable:  bool,
 }
 
+impl CreateAssetPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_asset_name(&self.name)?;
+        verify_asset_symbol(&self.symbol)?;
+
+        if self.supply == 0 {
+            return Err(ServiceError::MeaningLessValue("supply".to_string()));
+        }
+
+        let mint_balance = verify_issuers(&self.init_mints)?;
+        if mint_balance != self.supply {
+            return Err(ServiceError::MintNotEqualSupply);
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct GetAssetPayload {
     pub id: Hash,
+}
+
+impl GetAssetPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        if self.id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -103,6 +129,26 @@ pub struct TransferPayload {
     pub to:       Address,
     pub value:    u64,
     pub memo:     String,
+}
+
+impl TransferPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_memo(&self.memo)?;
+
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.to == Address::default() {
+            return Err(ServiceError::MeaningLessValue("to".to_string()));
+        }
+
+        if self.value == 0 {
+            return Err(ServiceError::MeaningLessValue("value".to_string()));
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -134,12 +180,56 @@ pub struct TransferFromPayload {
     pub memo:      String,
 }
 
+impl TransferFromPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_memo(&self.memo)?;
+
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.sender == Address::default() {
+            return Err(ServiceError::MeaningLessValue("sender".to_string()));
+        }
+
+        if self.recipient == Address::default() {
+            return Err(ServiceError::MeaningLessValue("recipient".to_string()));
+        }
+
+        if self.value == 0 {
+            return Err(ServiceError::MeaningLessValue("value".to_string()));
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct HookTransferFromPayload {
     pub sender:    Address,
     pub recipient: Address,
     pub value:     u64,
     pub memo:      String,
+}
+
+impl HookTransferFromPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_memo(&self.memo)?;
+
+        if self.sender == Address::default() {
+            return Err(ServiceError::MeaningLessValue("sender".to_string()));
+        }
+
+        if self.recipient == Address::default() {
+            return Err(ServiceError::MeaningLessValue("recipient".to_string()));
+        }
+
+        if self.value == 0 {
+            return Err(ServiceError::MeaningLessValue("value".to_string()));
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -158,6 +248,20 @@ pub struct GetBalancePayload {
     pub user:     Address,
 }
 
+impl GetBalancePayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.user == Address::default() {
+            return Err(ServiceError::MeaningLessValue("user".to_string()));
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
 pub struct GetBalanceResponse {
     pub asset_id: Hash,
@@ -170,6 +274,24 @@ pub struct GetAllowancePayload {
     pub asset_id: Hash,
     pub grantor:  Address,
     pub grantee:  Address,
+}
+
+impl GetAllowancePayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.grantor == Address::default() {
+            return Err(ServiceError::MeaningLessValue("grantor".to_string()));
+        }
+
+        if self.grantee == Address::default() {
+            return Err(ServiceError::MeaningLessValue("grantee".to_string()));
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, Default)]
@@ -329,12 +451,48 @@ pub struct MintAssetPayload {
     pub memo:     String,
 }
 
+impl MintAssetPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_memo(&self.memo)?;
+
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.to == Address::default() {
+            return Err(ServiceError::MeaningLessValue("to".to_string()));
+        }
+
+        if self.amount == 0 {
+            return Err(ServiceError::MeaningLessValue("amount".to_string()));
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BurnAssetPayload {
     pub asset_id: Hash,
     pub amount:   u64,
     pub proof:    Hex,
     pub memo:     String,
+}
+
+impl BurnAssetPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        verify_memo(&self.memo)?;
+
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.amount == 0 {
+            return Err(ServiceError::MeaningLessValue("amount".to_string()));
+        }
+
+        Ok(())
+    }
 }
 
 pub type RelayAssetPayload = BurnAssetPayload;
@@ -362,4 +520,86 @@ pub type RelayAssetEvent = BurnAssetEvent;
 pub struct ChangeAdminPayload {
     pub asset_id:  Hash,
     pub new_admin: Address,
+}
+
+impl ChangeAdminPayload {
+    pub fn verify(&self) -> Result<(), ServiceError> {
+        if self.asset_id == Hash::default() {
+            return Err(ServiceError::MeaningLessValue("asset_id".to_string()));
+        }
+
+        if self.new_admin == Address::default() {
+            return Err(ServiceError::MeaningLessValue("new_admin".to_string()));
+        }
+
+        Ok(())
+    }
+}
+
+fn verify_asset_name(name: &str) -> Result<(), ServiceError> {
+    let length = name.chars().count();
+
+    if length > 40 || length == 0 {
+        return Err(ServiceError::Format);
+    }
+
+    for (index, char) in name.chars().enumerate() {
+        if !(char.is_ascii_alphanumeric() || char == '_' || char == ' ') {
+            return Err(ServiceError::Format);
+        }
+
+        if index == 0 && (char == '_' || char == ' ' || char.is_ascii_digit()) {
+            return Err(ServiceError::Format);
+        }
+
+        if index == length - 1 && (char == '_' || char == ' ') {
+            return Err(ServiceError::Format);
+        }
+    }
+
+    Ok(())
+}
+
+fn verify_asset_symbol(symbol: &str) -> Result<(), ServiceError> {
+    let length = symbol.chars().count();
+
+    if length > 10 || length == 0 {
+        return Err(ServiceError::Format);
+    }
+
+    for (index, char) in symbol.chars().enumerate() {
+        if !(char.is_ascii_alphanumeric()) {
+            return Err(ServiceError::Format);
+        }
+
+        if index == 0 && !char.is_ascii_uppercase() {
+            return Err(ServiceError::Format);
+        }
+    }
+
+    Ok(())
+}
+
+fn verify_memo(memo: &str) -> Result<(), ServiceError> {
+    let length = memo.chars().count();
+
+    if length > 256 {
+        return Err(ServiceError::TooLongMemo);
+    }
+
+    Ok(())
+}
+
+fn verify_issuers(issuers: &[IssuerWithBalance]) -> Result<u64, ServiceError> {
+    let mut accu_mint_balance = 0u64;
+    for issuer in issuers {
+        issuer.verify()?;
+        let (checked_value, overflow) = accu_mint_balance.overflowing_add(issuer.balance);
+        if overflow {
+            return Err(ServiceError::BalanceOverflow);
+        }
+        accu_mint_balance = checked_value;
+    }
+
+    Ok(accu_mint_balance)
 }

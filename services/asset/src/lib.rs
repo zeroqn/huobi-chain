@@ -76,6 +76,14 @@ macro_rules! impl_assets {
     }};
 }
 
+macro_rules! verify_payload {
+    ($payload: ident) => {
+        if let Err(err) = $payload.verify() {
+            return err.into();
+        }
+    };
+}
+
 pub trait AssetInterface {
     fn native_asset(&self, ctx: &ServiceContext) -> Result<Asset, ServiceResponse<()>>;
 
@@ -227,10 +235,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             relayable: payload.relayable,
         };
 
-        if let Err(e) = self.check_format_(&asset) {
-            panic!(e);
-        }
-
         self.set_asset_(asset.clone());
         self.set_value(NATIVE_ASSET_KEY.to_owned(), payload.id.clone());
 
@@ -256,6 +260,8 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(100_00)]
     #[read]
     fn get_asset(&self, _ctx: ServiceContext, payload: GetAssetPayload) -> ServiceResponse<Asset> {
+        verify_payload!(payload);
+
         match self.read_asset_(&payload.id) {
             Some(s) => ServiceResponse::from_succeed(s),
             None => ServiceError::AssetNotFound(payload.id).into(),
@@ -279,6 +285,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         _ctx: ServiceContext,
         payload: GetBalancePayload,
     ) -> ServiceResponse<GetBalanceResponse> {
+        verify_payload!(payload);
         require_asset_exists!(self, payload.asset_id);
 
         let user_balance = self.asset_balance(&payload.user, &payload.asset_id);
@@ -297,6 +304,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         _ctx: ServiceContext,
         payload: GetAllowancePayload,
     ) -> ServiceResponse<GetAllowanceResponse> {
+        verify_payload!(payload);
         require_asset_exists!(self, payload.asset_id);
 
         let grantor_balance = self.asset_balance(&payload.grantor, &payload.asset_id);
@@ -317,6 +325,8 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         ctx: ServiceContext,
         payload: CreateAssetPayload,
     ) -> ServiceResponse<Asset> {
+        verify_payload!(payload);
+
         let caller = ctx.get_caller();
         let payload_json = match serde_json::to_string(&payload) {
             Ok(j) => j,
@@ -338,10 +348,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             relayable: payload.relayable,
         };
 
-        if self.check_format_(&asset).is_err() {
-            return ServiceError::Format.into();
-        }
-
         self.set_asset_(asset.clone());
         for mint in payload.init_mints {
             self.set_account_value(
@@ -358,6 +364,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(210_00)]
     #[write]
     fn transfer(&mut self, ctx: ServiceContext, payload: TransferPayload) -> ServiceResponse<()> {
+        verify_payload!(payload);
         require_asset_exists!(self, payload.asset_id);
 
         let sender = match Self::extra_caller(&ctx) {
@@ -387,6 +394,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         ctx: ServiceContext,
         payload: TransferFromPayload,
     ) -> ServiceResponse<()> {
+        verify_payload!(payload);
         require_asset_exists!(self, payload.asset_id);
 
         let caller = match Self::extra_caller(&ctx) {
@@ -440,6 +448,8 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         ctx: ServiceContext,
         payload: HookTransferFromPayload,
     ) -> ServiceResponse<()> {
+        verify_payload!(payload);
+
         if let Some(admin_key) = ctx.get_extra() {
             if admin_key != Bytes::from_static(b"governance") {
                 return ServiceError::Unauthorized.into();
@@ -459,6 +469,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(210_00)]
     #[write]
     fn approve(&mut self, ctx: ServiceContext, payload: ApprovePayload) -> ServiceResponse<()> {
+        verify_payload!(payload);
         require_asset_exists!(self, payload.asset_id);
 
         let caller = ctx.get_caller();
@@ -489,6 +500,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         ctx: ServiceContext,
         payload: ChangeAdminPayload,
     ) -> ServiceResponse<()> {
+        verify_payload!(payload);
         let mut asset = get_asset_require_admin!(self.assets, &ctx, &payload.asset_id);
 
         asset.admin = payload.new_admin.clone();
@@ -500,22 +512,21 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(210_00)]
     #[write]
     fn mint(&mut self, ctx: ServiceContext, payload: MintAssetPayload) -> ServiceResponse<()> {
+        verify_payload!(payload);
         let mut asset = get_asset_require_admin!(self.assets, &ctx, &payload.asset_id);
-
-        let (checked_value, overflow) = asset.supply.overflowing_add(payload.amount);
-        if overflow {
-            return ServiceError::BalanceOverflow.into();
-        }
-
-        asset.supply = checked_value;
-
-        self.set_asset_(asset);
 
         let mut recipient_balance = self.asset_balance(&payload.to, &payload.asset_id);
         if let Err(e) = recipient_balance.checked_add(payload.amount) {
             return e.into();
         }
 
+        let (checked_value, overflow) = asset.supply.overflowing_add(payload.amount);
+        if overflow {
+            return ServiceError::BalanceOverflow.into();
+        }
+        asset.supply = checked_value;
+
+        self.set_asset_(asset);
         self.set_account_value(&payload.to, payload.asset_id.clone(), recipient_balance);
         Self::emit_event(&ctx, "MintAsset".to_owned(), MintAssetEvent {
             asset_id: payload.asset_id,
@@ -529,26 +540,25 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(210_00)]
     #[write]
     fn burn(&mut self, ctx: ServiceContext, payload: BurnAssetPayload) -> ServiceResponse<()> {
+        verify_payload!(payload);
         let mut asset = if let Some(asset) = self.read_asset_(&payload.asset_id) {
             asset
         } else {
             return ServiceError::AssetNotFound(payload.asset_id.clone()).into();
         };
 
-        let (checked_value, overflow) = asset.supply.overflowing_sub(payload.amount);
-        if overflow {
-            return ServiceError::BalanceOverflow.into();
-        }
-
-        asset.supply = checked_value;
-
-        self.set_asset_(asset);
-
         let mut burner_balance = self.asset_balance(&ctx.get_caller(), &payload.asset_id);
         if let Err(e) = burner_balance.checked_sub(payload.amount) {
             return e.into();
         }
 
+        let (checked_value, overflow) = asset.supply.overflowing_sub(payload.amount);
+        if overflow {
+            return ServiceError::BalanceOverflow.into();
+        }
+        asset.supply = checked_value;
+
+        self.set_asset_(asset);
         self.set_account_value(&ctx.get_caller(), payload.asset_id.clone(), burner_balance);
 
         Self::emit_event(&ctx, "BurnAsset".to_owned(), BurnAssetEvent {
@@ -563,6 +573,7 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
     #[cycles(210_00)]
     #[write]
     fn relay(&mut self, ctx: ServiceContext, payload: RelayAssetPayload) -> ServiceResponse<()> {
+        verify_payload!(payload);
         let asset = if let Some(asset) = self.read_asset_(&payload.asset_id) {
             asset
         } else {
@@ -637,46 +648,6 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
     }
 
-    fn check_format_(&self, asset: &Asset) -> Result<(), ServiceError> {
-        let length = asset.name.chars().count();
-
-        if length > 40 || length == 0 {
-            return Err(ServiceError::Format);
-        }
-
-        for (index, char) in asset.name.chars().enumerate() {
-            if !(char.is_ascii_alphanumeric() || char == '_' || char == ' ') {
-                return Err(ServiceError::Format);
-            }
-
-            if index == 0 && (char == '_' || char == ' ' || char.is_ascii_digit()) {
-                return Err(ServiceError::Format);
-            }
-
-            if index == length - 1 && (char == '_' || char == ' ') {
-                return Err(ServiceError::Format);
-            }
-        }
-
-        let length = asset.symbol.chars().count();
-
-        if length > 10 || length == 0 {
-            return Err(ServiceError::Format);
-        }
-
-        for (index, char) in asset.symbol.chars().enumerate() {
-            if !(char.is_ascii_alphanumeric()) {
-                return Err(ServiceError::Format);
-            }
-
-            if index == 0 && !char.is_ascii_uppercase() {
-                return Err(ServiceError::Format);
-            }
-        }
-
-        Ok(())
-    }
-
     fn read_asset_(&self, asset_id: &Hash) -> Option<Asset> {
         self.assets.get(asset_id)
     }
@@ -742,6 +713,15 @@ pub enum ServiceError {
 
     #[display(fmt = "Can not get native asset")]
     NoNativeAsset,
+
+    #[display(fmt = "{} is zero or empty which is meaningless", _0)]
+    MeaningLessValue(String),
+
+    #[display(fmt = "Accumulative mint value is not equals to supply")]
+    MintNotEqualSupply,
+
+    #[display(fmt = "Memo is too long")]
+    TooLongMemo,
 }
 
 impl ServiceError {
@@ -759,6 +739,9 @@ impl ServiceError {
             ServiceError::Format => 110,
             ServiceError::NotRelayable => 111,
             ServiceError::NoNativeAsset => 112,
+            ServiceError::MeaningLessValue(_) => 113,
+            ServiceError::MintNotEqualSupply => 114,
+            ServiceError::TooLongMemo => 115,
         }
     }
 }
