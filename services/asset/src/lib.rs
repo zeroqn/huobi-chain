@@ -13,7 +13,7 @@ use crate::types::{
     ChangeAdminPayload, CreateAssetPayload, GetAllowancePayload, GetAllowanceResponse,
     GetAssetPayload, GetBalancePayload, GetBalanceResponse, HookTransferFromPayload,
     InitGenesisPayload, MintAssetEvent, MintAssetPayload, RelayAssetEvent, RelayAssetPayload,
-    TransferEvent, TransferFromEvent, TransferFromPayload, TransferPayload,
+    TransferFromEvent, TransferFromPayload, TransferPayload,
 };
 use binding_macro::{cycles, genesis, service, write};
 use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK, StoreMap};
@@ -434,14 +434,26 @@ impl<SDK: ServiceSDK, TQS: TransferQuotaInterface> AssetService<SDK, TQS> {
             return err.into();
         }
 
-        let event = TransferEvent {
-            asset_id,
-            from: sender,
-            to: payload.to,
-            value: payload.value,
-            memo: payload.memo,
-        };
-        Self::emit_event(&ctx, "TransferAsset".to_owned(), event)
+        let event = format!(
+            "{{
+            \"asset_id\": {},
+            \"from\": {},
+            \"to\": {},
+            \"value\": {},
+            \"memo\": {},
+        }}",
+            asset_id.as_hex(),
+            sender.to_string(),
+            payload.to.to_string(),
+            payload.value,
+            payload.memo
+        );
+        ctx.emit_event(
+            ASSET_SERVICE_NAME.to_owned(),
+            "TransferAsset".to_owned(),
+            event,
+        );
+        ServiceResponse::from_succeed(())
     }
 
     #[cycles(210_00)]
