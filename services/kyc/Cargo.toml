@@ -14,9 +14,12 @@ rlp = "0.4"
 muta-codec-derive = "0.2"
 hex = "0.4"
 
-muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
-protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+# muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc"}
+# protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc", package = "muta-protocol" }
+# binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc" }
+muta = { path = "../../../muta-chain", features = ["random_leader"] }
+protocol = { path = "../../../muta-chain/protocol", package = "muta-protocol" }
+binding-macro = { path = "../../../muta-chain/binding-macro" }
 
 [dev-dependencies]
 cita_trie = "2.0"

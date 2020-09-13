@@ -2,10 +2,16 @@ use admission_control::AdmissionControlInterface;
 use binding_macro::{cycles, service};
 use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK};
 use protocol::types::{ServiceContext, SignedTransaction};
+use serde::Deserialize;
 
 use multi_signature::MultiSignatureService;
 
 pub const AUTHORIZATION_SERVICE_NAME: &str = "authorization";
+
+#[derive(Deserialize)]
+pub struct PtrSignedTransaction {
+    ptr: usize,
+}
 
 pub struct AuthorizationService<AC, SDK> {
     _sdk:              SDK,
@@ -25,6 +31,21 @@ where
             multi_sig,
             admission_control,
         }
+    }
+
+    #[cycles(21_000)]
+    #[read]
+    fn check_authorization_by_ptr(
+        &self,
+        ctx: ServiceContext,
+        payload: PtrSignedTransaction,
+    ) -> ServiceResponse<()> {
+        let stx: SignedTransaction = {
+            let boxed = unsafe { Box::from_raw(payload.ptr as *mut SignedTransaction) };
+            *boxed
+        };
+
+        self.check_authorization(ctx, stx)
     }
 
     #[cycles(21_000)]

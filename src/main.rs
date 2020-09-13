@@ -1,4 +1,8 @@
 use derive_more::{Display, From};
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 use protocol::traits::{SDKFactory, Service, ServiceMapping, ServiceSDK};
 use protocol::{ProtocolError, ProtocolErrorKind, ProtocolResult};

@@ -10,8 +10,8 @@ payload = '''
     "symbol": "HT",
     "supply": 50000000000000000,
     "precision": 8,
-    "init_mints": [{"addr": "muta10e0525sfrf53yh2aljmm3sn9jq5njk7llt9agp", "balance": 50000000000000000}],
-    "admin": "muta10e0525sfrf53yh2aljmm3sn9jq5njk7llt9agp",
+    "init_mints": [{"addr": "muta1zyfzy0j99w4m8xju4gzp8k2krs3m6dzmpwy7ny", "balance": 50000000000000000}],
+    "admin": "muta1zyfzy0j99w4m8xju4gzp8k2krs3m6dzmpwy7ny",
     "relayable": true
 }
 '''
@@ -40,7 +40,7 @@ payload = '''
     "prevote_ratio": 10,
     "precommit_ratio": 10,
     "brake_ratio": 7,
-    "tx_num_limit": 9000,
+    "tx_num_limit": 18000,
     "max_tx_size": 10485760
 }
 '''
