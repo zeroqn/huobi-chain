@@ -12,7 +12,7 @@ multi-signature = { git = "https://github.com/zeroqn/muta", branch = "perf-expir
 derive_more = "0.99"
 tokio = { version = "0.2", features = ["macros", "rt-core", "rt-util"]}
 clap = "2.33"
-mimalloc = { version = "0.1", default-features = false }
+# mimalloc = { version = "0.1", default-features = false }
 
 authorization = { path = "services/authorization" }
 metadata = { path = "services/metadata" }
