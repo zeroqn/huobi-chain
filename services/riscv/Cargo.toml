@@ -7,12 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc"}
-# protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc", package = "muta-protocol" }
-# binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc" }
-muta = { path = "../../../muta-chain", features = ["random_leader"] }
-protocol = { path = "../../../muta-chain/protocol", package = "muta-protocol" }
-binding-macro = { path = "../../../muta-chain/binding-macro" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
 
 admission_control = { path = "../admission_control"}
 asset = { path = "../asset" }
@@ -30,7 +27,9 @@ log = "0.4"
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
-metadata = { path = "../metadata" }
 framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
 core-storage = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+metadata = { path = "../metadata" }
+framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
 env_logger = "0.7.1"

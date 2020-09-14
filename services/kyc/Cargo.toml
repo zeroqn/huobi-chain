@@ -14,16 +14,13 @@ rlp = "0.4"
 muta-codec-derive = "0.2"
 hex = "0.4"
 
-# muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc"}
-# protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc", package = "muta-protocol" }
-# binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc" }
-muta = { path = "../../../muta-chain", features = ["random_leader"] }
-protocol = { path = "../../../muta-chain/protocol", package = "muta-protocol" }
-binding-macro = { path = "../../../muta-chain/binding-macro" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
 
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
 
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
-core-storage = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }

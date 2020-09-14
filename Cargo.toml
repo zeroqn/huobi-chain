@@ -5,12 +5,9 @@ authors = ["Muta Dev <muta@nervos.org>"]
 edition = "2018"
 
 [dependencies]
-# muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc", features = ["random_leader", "dump_profile"]}
-# protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc", package = "muta-protocol" }
-# multi-signature = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc"}
-muta = { path = "../muta-chain", features = ["random_leader"] }
-protocol = { path = "../muta-chain/protocol", package = "muta-protocol" }
-multi-signature = { path = "../muta-chain/built-in-services/multi-signature" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", features = ["random_leader"]}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
+multi-signature = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
 
 derive_more = "0.99"
 tokio = { version = "0.2", features = ["macros", "rt-core", "rt-util"]}
@@ -36,7 +33,7 @@ toml = "0.5"
 lazy_static = "1.4"
 muta-codec-derive = "0.2"
 rlp = "0.4"
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
 serde_json = "1.0"
 serde = "1.0"
 
