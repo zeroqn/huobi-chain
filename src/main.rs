@@ -168,7 +168,7 @@ fn main() {
     muta::run(
         DefaultServiceMapping {},
         "Huobi-chain",
-        "v0.5.0-rc.2",
+        "v0.5.0",
         "Muta Dev <muta@nervos.org>",
         None,
     )

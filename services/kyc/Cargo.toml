@@ -1,6 +1,6 @@
 [package]
 name = "kyc"
-version = "0.1.0"
+version = "0.5.0"
 authors = ["nervosnetwork <liang2929@hotmail.com>"]
 edition = "2018"
 
@@ -14,13 +14,13 @@ rlp = "0.4"
 muta-codec-derive = "0.2"
 hex = "0.4"
 
-muta = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
-protocol = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
+muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
 
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
 
-framework = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
-core-storage = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
+framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+core-storage = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
