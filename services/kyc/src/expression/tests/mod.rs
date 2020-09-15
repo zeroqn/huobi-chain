@@ -125,7 +125,6 @@ pub fn test_valuation() {
         address.clone(),
         "(!Huobi.Nation@`UK` || .species@`Hamster`) && Lycrus.planet@`NULL`".to_string(),
     );
-    // println!("empty_left_dot 2 : {:?}", ret);
     assert_eq!(true, ret.is_err(), "empty_left_dot 2");
 
     let ret = evaluate(
@@ -133,7 +132,6 @@ pub fn test_valuation() {
         address.clone(),
         "(!Huobi.Nation@`UK` || Lycrus.species@`Hamster`) && .planet@`NULL`".to_string(),
     );
-    // println!("empty_left_dot 3 : {:?}", ret);
     assert_eq!(true, ret.is_err(), "empty_left_dot 3");
 
     //======
@@ -143,7 +141,6 @@ pub fn test_valuation() {
         address.clone(),
         "(!Huobi.@`UK` || Lycrus.species@`Hamster`) && Lycrus.planet@`NULL`".to_string(),
     );
-    // println!("empty_right_dot 1 : {:?}", ret);
     assert_eq!(true, ret.is_err(), "empty_right_dot 1");
 
     let ret = evaluate(
@@ -151,7 +148,6 @@ pub fn test_valuation() {
         address.clone(),
         "(!Huobi.Nation@`UK` || Lycrus.@`Hamster`) && Lycrus.planet@`NULL`".to_string(),
     );
-    // println!("empty_right_dot 2 : {:?}", ret);
     assert_eq!(true, ret.is_err(), "empty_right_dot 2");
 
     let ret = evaluate(
@@ -159,7 +155,6 @@ pub fn test_valuation() {
         address.clone(),
         "(!Huobi.Nation@`UK` || Lycrus.planet@`Hamster`) && Lycrus.@`NULL`".to_string(),
     );
-    // println!("empty_right_dot 3 : {:?}", ret);
     assert_eq!(true, ret.is_err(), "empty_right_dot 3");
 
     //======

@@ -104,8 +104,8 @@ pub struct AdmissionControlService<A, G, SDK> {
     sdk:       SDK,
     deny_list: Box<dyn StoreMap<Address, bool>>,
 
-    asset:      A,
-    governance: G,
+    pub asset:      A,
+    pub governance: G,
 }
 
 impl<A, G, SDK> AdmissionControlInterface for AdmissionControlService<A, G, SDK>

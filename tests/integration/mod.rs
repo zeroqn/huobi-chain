@@ -21,21 +21,35 @@ use governance::GovernanceService;
 use kyc::KycService;
 use metadata::MetadataService;
 use multi_signature::MultiSignatureService;
+use riscv::RiscvService;
+use timestamp::TimestampService;
+use transfer_quota::TransferQuotaService;
 
-type AuthorizationEntity<T> = AuthorizationService<
+type AuthorizationType<SDK> = AuthorizationService<
     AdmissionControlService<
-        AssetService<T>,
-        GovernanceService<AssetService<T>, MetadataService<T>, T>,
-        T,
+        AssetServiceType<SDK>,
+        GovernanceService<AssetServiceType<SDK>, MetadataService<SDK>, SDK>,
+        SDK,
     >,
-    T,
+    SDK,
 >;
 
-type AdmissionControlEntity<T> = AdmissionControlService<
-    AssetService<T>,
-    GovernanceService<AssetService<T>, MetadataService<T>, T>,
-    T,
+type AdmissionControlType<SDK> = AdmissionControlService<
+    AssetServiceType<SDK>,
+    GovernanceService<AssetServiceType<SDK>, MetadataService<SDK>, SDK>,
+    SDK,
 >;
+
+type AssetServiceType<SDK> = AssetService<SDK, TransferQuotaServiceType<SDK>>;
+
+type TransferQuotaServiceType<SDK> =
+    TransferQuotaService<SDK, KycService<SDK>, TimestampService<SDK>>;
+
+type GovernanceServiceType<SDK> =
+    GovernanceService<AssetServiceType<SDK>, MetadataService<SDK>, SDK>;
+
+type RiscvServiceType<SDK> =
+    RiscvService<AssetServiceType<SDK>, GovernanceServiceType<SDK>, KycService<SDK>, SDK>;
 
 lazy_static::lazy_static! {
     pub static ref ADMIN_ACCOUNT: Address = Address::from_hex("0xcff1002107105460941f797828f468667aa1a2db").unwrap();
@@ -270,6 +284,9 @@ impl ServiceMapping for MockServiceMapping {
             "metadata" => Box::new(Self::new_metadata(factory)?) as Box<dyn Service>,
             "kyc" => Box::new(Self::new_kyc(factory)?) as Box<dyn Service>,
             "multi_signature" => Box::new(Self::new_multi_sig(factory)?) as Box<dyn Service>,
+            "timestamp" => Box::new(Self::new_timestamp(factory)?) as Box<dyn Service>,
+            "transfer_quota" => Box::new(Self::new_transfer_quota(factory)?) as Box<dyn Service>,
+            "riscv" => Box::new(Self::new_riscv(factory)?) as Box<dyn Service>,
             _ => panic!("not found service"),
         };
 
@@ -285,15 +302,56 @@ impl ServiceMapping for MockServiceMapping {
             "multi_signature".to_owned(),
             "governance".to_owned(),
             "admission_control".to_owned(),
+            "timestamp".to_owned(),
+            "transfer_quota".to_owned(),
+            "riscv".to_owned(),
         ]
     }
 }
 
 impl MockServiceMapping {
+    fn new_riscv<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<RiscvServiceType<SDK>> {
+        let asset = Self::new_asset(factory)?;
+        let governance = Self::new_governance(factory)?;
+        let kyc = Self::new_kyc(factory)?;
+
+        Ok(RiscvService::init(
+            factory.get_sdk("riscv")?,
+            asset,
+            governance,
+            kyc,
+        ))
+    }
+
+    fn new_transfer_quota<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<TransferQuotaServiceType<SDK>> {
+        let kyc = Self::new_kyc(factory)?;
+        let timestamp = Self::new_timestamp(factory)?;
+
+        Ok(TransferQuotaService::new(
+            factory.get_sdk("transfer_quota")?,
+            kyc,
+            timestamp,
+        ))
+    }
+
+    fn new_timestamp<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<TimestampService<SDK>> {
+        Ok(TimestampService::new(factory.get_sdk("transfer_quota")?))
+    }
+
     fn new_asset<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
         factory: &Factory,
-    ) -> ProtocolResult<AssetService<SDK>> {
-        Ok(AssetService::new(factory.get_sdk("asset")?))
+    ) -> ProtocolResult<AssetServiceType<SDK>> {
+        let transfer_quota = Self::new_transfer_quota(factory)?;
+        Ok(AssetService::new(
+            factory.get_sdk("asset")?,
+            Some(transfer_quota),
+        ))
     }
 
     fn new_metadata<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
@@ -318,7 +376,7 @@ impl MockServiceMapping {
 
     fn new_governance<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
         factory: &Factory,
-    ) -> ProtocolResult<GovernanceService<AssetService<SDK>, MetadataService<SDK>, SDK>> {
+    ) -> ProtocolResult<GovernanceServiceType<SDK>> {
         let asset = Self::new_asset(factory)?;
         let metadata = Self::new_metadata(factory)?;
         Ok(GovernanceService::new(
@@ -330,7 +388,7 @@ impl MockServiceMapping {
 
     fn new_admission_ctrl<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
         factory: &Factory,
-    ) -> ProtocolResult<AdmissionControlEntity<SDK>> {
+    ) -> ProtocolResult<AdmissionControlType<SDK>> {
         let asset = Self::new_asset(factory)?;
         let governance = Self::new_governance(factory)?;
         Ok(AdmissionControlService::new(
@@ -342,7 +400,7 @@ impl MockServiceMapping {
 
     fn new_authorization<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
         factory: &Factory,
-    ) -> ProtocolResult<AuthorizationEntity<SDK>> {
+    ) -> ProtocolResult<AuthorizationType<SDK>> {
         let multi_sig = Self::new_multi_sig(factory)?;
         let admission_control = Self::new_admission_ctrl(factory)?;
         Ok(AuthorizationService::new(

@@ -12,8 +12,8 @@ use kyc::{KycService, KYC_SERVICE_NAME};
 use metadata::{MetadataService, METADATA_SERVICE_NAME};
 use multi_signature::{MultiSignatureService, MULTI_SIG_SERVICE_NAME};
 use riscv::{RiscvService, RISCV_SERVICE_NAME};
-use timestamp::TimestampService;
-use transfer_quota::TransferQuotaService;
+use timestamp::{TimestampService, TIMESTAMP_SERVICE_NAME};
+use transfer_quota::{TransferQuotaService, TRANSFER_QUOTA_SERVICE_NAME};
 
 type AuthorizationType<SDK> = AuthorizationService<
     AdmissionControlService<
@@ -60,6 +60,10 @@ impl ServiceMapping for DefaultServiceMapping {
             METADATA_SERVICE_NAME => Box::new(Self::new_metadata(factory)?) as Box<dyn Service>,
             KYC_SERVICE_NAME => Box::new(Self::new_kyc(factory)?) as Box<dyn Service>,
             MULTI_SIG_SERVICE_NAME => Box::new(Self::new_multi_sig(factory)?) as Box<dyn Service>,
+            TIMESTAMP_SERVICE_NAME => Box::new(Self::new_timestamp(factory)?) as Box<dyn Service>,
+            TRANSFER_QUOTA_SERVICE_NAME => {
+                Box::new(Self::new_transfer_quota(factory)?) as Box<dyn Service>
+            }
             RISCV_SERVICE_NAME => Box::new(Self::new_riscv(factory)?) as Box<dyn Service>,
             _ => panic!("not found service"),
         };
@@ -76,18 +80,42 @@ impl ServiceMapping for DefaultServiceMapping {
             MULTI_SIG_SERVICE_NAME.to_owned(),
             GOVERNANCE_SERVICE_NAME.to_owned(),
             ADMISSION_CONTROL_SERVICE_NAME.to_owned(),
+            TIMESTAMP_SERVICE_NAME.to_owned(),
+            TRANSFER_QUOTA_SERVICE_NAME.to_owned(),
             RISCV_SERVICE_NAME.to_owned(),
         ]
     }
 }
 
 impl DefaultServiceMapping {
+    fn new_transfer_quota<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<TransferQuotaService<SDK, KycService<SDK>, TimestampService<SDK>>> {
+        let kyc = Self::new_kyc(factory)?;
+        let timestamp = Self::new_timestamp(factory)?;
+
+        Ok(TransferQuotaService::new(
+            factory.get_sdk(TRANSFER_QUOTA_SERVICE_NAME)?,
+            kyc,
+            timestamp,
+        ))
+    }
+
+    fn new_timestamp<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
+        factory: &Factory,
+    ) -> ProtocolResult<TimestampService<SDK>> {
+        Ok(TimestampService::new(
+            factory.get_sdk(TIMESTAMP_SERVICE_NAME)?,
+        ))
+    }
+
     fn new_asset<SDK: 'static + ServiceSDK, Factory: SDKFactory<SDK>>(
         factory: &Factory,
     ) -> ProtocolResult<AssetServiceType<SDK>> {
+        let transfer_quota = Self::new_transfer_quota(factory)?;
         Ok(AssetService::new(
             factory.get_sdk(ASSET_SERVICE_NAME)?,
-            None,
+            Some(transfer_quota),
         ))
     }
 

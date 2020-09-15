@@ -170,8 +170,6 @@ fn parse_internal(mut nodes: VecDeque<Node>) -> Result<Node, ParseError> {
                     .expect("we marked there is a node, but it's gone, weird");
 
                 if index < 1 {
-                    println!("{}", node);
-                    println!("{}", priority);
                     return Err(ParseError("the operator need a left node in left (,or right in revers mode) child node, but there is no more leading nodes"));
                 }
 

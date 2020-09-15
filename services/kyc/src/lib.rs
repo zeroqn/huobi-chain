@@ -2,18 +2,17 @@ mod error;
 mod expression;
 #[cfg(test)]
 mod tests;
-mod types;
-use error::ServiceError;
+pub mod types;
 
-use expression::traits::ExpressionDataFeed;
-use types::{
-    ChangeOrgAdmin, ChangeOrgApproved, ChangeServiceAdmin, EvalUserTagExpression, FixedTagList,
-    Genesis, GetUserTags, KycOrgInfo, NewOrgEvent, OrgName, RegisterNewOrg, TagName,
-    UpdateOrgSupportTags, UpdateUserTags, Validate,
+use std::{
+    collections::{HashMap, HashSet},
+    ops::{Deref, DerefMut},
 };
 
 use binding_macro::{cycles, genesis, service};
 use derive_more::Constructor;
+use serde::Serialize;
+
 use muta_codec_derive::RlpFixedCodec;
 use protocol::{
     fixed_codec::{FixedCodec, FixedCodecError},
@@ -21,11 +20,13 @@ use protocol::{
     types::{Address, ServiceContext},
     Bytes, ProtocolResult,
 };
-use serde::Serialize;
 
-use std::{
-    collections::{HashMap, HashSet},
-    ops::{Deref, DerefMut},
+use error::ServiceError;
+use expression::traits::ExpressionDataFeed;
+pub use types::{
+    ChangeOrgAdmin, ChangeOrgApproved, ChangeServiceAdmin, EvalUserTagExpression, FixedTagList,
+    Genesis, GetUserTags, KycOrgInfo, NewOrgEvent, OrgName, RegisterNewOrg, TagName,
+    UpdateOrgSupportTags, UpdateUserTags, Validate,
 };
 
 const KYC_SERVICE_ADMIN_KEY: &str = "kyc_service_admin";
@@ -255,7 +256,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
     }
 
     #[genesis]
-    fn init_genesis(&mut self, genesis: Genesis) {
+    pub fn init_genesis(&mut self, genesis: Genesis) {
         if let Err(e) = genesis.validate() {
             panic!(e);
         }
@@ -275,7 +276,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[read]
-    fn get_orgs(&self, ctx: ServiceContext) -> ServiceResponse<Vec<OrgName>> {
+    pub fn get_orgs(&self, ctx: ServiceContext) -> ServiceResponse<Vec<OrgName>> {
         let mut org_names = Vec::new();
 
         for (org_name, _) in self.orgs.iter() {
@@ -291,7 +292,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(10_000)]
     #[read]
-    fn get_admin(&self, ctx: ServiceContext) -> ServiceResponse<Address> {
+    pub fn get_admin(&self, ctx: ServiceContext) -> ServiceResponse<Address> {
         if let Some(admin) = self.sdk.get_value(&KYC_SERVICE_ADMIN_KEY.to_owned()) {
             ServiceResponse::from_succeed(admin)
         } else {
@@ -302,7 +303,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
     // Note: Use Option to provide default value require by ServiceResponse
     #[cycles(21_000)]
     #[read]
-    fn get_org_info(
+    pub fn get_org_info(
         &self,
         ctx: ServiceContext,
         org_name: OrgName,
@@ -317,7 +318,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[read]
-    fn get_org_supported_tags(
+    pub fn get_org_supported_tags(
         &self,
         ctx: ServiceContext,
         org_name: OrgName,
@@ -335,7 +336,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[read]
-    fn get_user_tags(
+    pub fn get_user_tags(
         &self,
         ctx: ServiceContext,
         payload: GetUserTags,
@@ -373,7 +374,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[read]
-    fn eval_user_tag_expression(
+    pub fn eval_user_tag_expression(
         &self,
         ctx: ServiceContext,
         payload: EvalUserTagExpression,
@@ -395,7 +396,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn change_org_approved(
+    pub fn change_org_approved(
         &mut self,
         ctx: ServiceContext,
         payload: ChangeOrgApproved,
@@ -414,7 +415,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn change_service_admin(
+    pub fn change_service_admin(
         &mut self,
         ctx: ServiceContext,
         payload: ChangeServiceAdmin,
@@ -432,7 +433,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn change_org_admin(
+    pub fn change_org_admin(
         &mut self,
         ctx: ServiceContext,
         payload: ChangeOrgAdmin,
@@ -452,7 +453,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn register_org(
+    pub fn register_org(
         &mut self,
         ctx: ServiceContext,
         new_org: RegisterNewOrg,
@@ -492,7 +493,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn update_supported_tags(
+    pub fn update_supported_tags(
         &mut self,
         ctx: ServiceContext,
         payload: UpdateOrgSupportTags,
@@ -516,7 +517,7 @@ impl<SDK: ServiceSDK> KycService<SDK> {
 
     #[cycles(21_000)]
     #[write]
-    fn update_user_tags(
+    pub fn update_user_tags(
         &mut self,
         ctx: ServiceContext,
         payload: UpdateUserTags,

@@ -97,3 +97,35 @@ payload = '''
    "deny_list": [ "muta16tfxsaylle2daa8zuul9up4ya0cddav9h4chyk" ]
 }
 '''
+
+[[services]]
+name = "transfer_quota"
+payload = '''
+{
+    "config": [
+        {
+            "asset_id": "0xf56924db538e77bb5951eb5ff0d02b88983c49c45eea30e8ae3e7234b311436c",
+            "asset_config": {
+                "admin": "muta10e0525sfrf53yh2aljmm3sn9jq5njk7llt9agp",
+                "activated": false,
+                "single_bill_quota": [],
+                "daily_quota_rule": [],
+                "monthly_quota_rule": [],
+                "yearly_quota_rule": []
+            }
+        }
+    ],
+    "admin": "muta10e0525sfrf53yh2aljmm3sn9jq5njk7llt9agp"
+}
+'''
+
+[[services]]
+name = "timestamp"
+payload = '''
+{
+    "start_time": 1599338758000,
+    "oracle": true,
+    "admin": "muta10e0525sfrf53yh2aljmm3sn9jq5njk7llt9agp"
+}
+'''
+

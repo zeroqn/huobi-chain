@@ -9,7 +9,7 @@ pub const AUTHORIZATION_SERVICE_NAME: &str = "authorization";
 
 pub struct AuthorizationService<AC, SDK> {
     _sdk:              SDK,
-    multi_sig:         MultiSignatureService<SDK>,
+    pub multi_sig:     MultiSignatureService<SDK>,
     admission_control: AC,
 }
 

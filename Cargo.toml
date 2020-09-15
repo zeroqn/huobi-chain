@@ -5,9 +5,9 @@ authors = ["Muta Dev <muta@nervos.org>"]
 edition = "2018"
 
 [dependencies]
-muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc.2.1", features = ["random_leader"]}
-protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc.2.1", package = "muta-protocol" }
-multi-signature = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc.2.1"}
+muta = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63", features = ["random_leader"]}
+protocol = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63", package = "muta-protocol" }
+multi-signature = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
 
 derive_more = "0.99"
 tokio = { version = "0.2", features = ["macros", "rt-core", "rt-util"]}
@@ -20,6 +20,8 @@ kyc = { path = "services/kyc" }
 riscv = { path = "services/riscv" }
 admission_control = { path = "services/admission_control" }
 governance = { path = "services/governance" }
+timestamp = {path = "services/timestamp"}
+transfer_quota = {path = "services/transfer_quota" }
 
 [dev-dependencies]
 bytes = "0.5"
@@ -30,7 +32,7 @@ toml = "0.5"
 lazy_static = "1.4"
 muta-codec-derive = "0.2"
 rlp = "0.4"
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0-rc.2.1"}
+framework = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
 serde_json = "1.0"
 serde = "1.0"
 
@@ -42,5 +44,10 @@ members = [
   "services/asset",
   "services/kyc",
   "services/admission_control",
-  "services/governance"
+  "services/governance",
+  "services/timestamp",
+  "services/transfer_quota",
 ]
+
+[[bin]]
+name = "huobi-chain-payment"

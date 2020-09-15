@@ -62,11 +62,11 @@ macro_rules! require_approved {
 }
 
 pub struct RiscvService<AS, G, K, SDK> {
-    sdk:           Rc<RefCell<SDK>>,
-    asset:         Rc<RefCell<AS>>,
-    governance:    Rc<RefCell<G>>,
-    kyc:           Rc<RefCell<K>>,
-    authorization: Authorization,
+    sdk:               Rc<RefCell<SDK>>,
+    pub asset:         Rc<RefCell<AS>>,
+    pub governance:    Rc<RefCell<G>>,
+    pub kyc:           Rc<RefCell<K>>,
+    pub authorization: Authorization,
 }
 
 #[service]

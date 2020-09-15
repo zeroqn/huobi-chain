@@ -19,6 +19,10 @@ use binding_macro::{cycles, genesis, service, write};
 use protocol::traits::{ExecutorParams, ServiceResponse, ServiceSDK, StoreMap};
 use protocol::types::{Address, Hash, ServiceContext};
 
+use transfer_quota::types::QuotaTransferPayload;
+use transfer_quota::{types::CreateAssetConfigPayload, TransferQuotaInterface};
+
+static TRANSFER_QUOTA_TOKEN: Bytes = Bytes::from_static(b"asset_service");
 const NATIVE_ASSET_KEY: &str = "native_asset";
 pub const ASSET_SERVICE_NAME: &str = "asset";
 
@@ -111,6 +115,12 @@ pub trait AssetInterface {
         payload: HookTransferFromPayload,
     ) -> Result<(), ServiceResponse<()>>;
 
+    fn get_asset_(
+        &self,
+        ctx: &ServiceContext,
+        payload: GetAssetPayload,
+    ) -> Result<Asset, ServiceResponse<()>>;
+
     fn approve_(
         &mut self,
         ctx: &ServiceContext,
@@ -130,12 +140,13 @@ pub trait AssetInterface {
     ) -> Result<(), ServiceResponse<()>>;
 }
 
-pub struct AssetService<SDK> {
-    sdk:    SDK,
+pub struct AssetService<SDK, TQS> {
+    sdk: SDK,
+    pub transfer_quota_service: Option<TQS>,
     assets: Box<dyn StoreMap<Hash, Asset>>,
 }
 
-impl<SDK: ServiceSDK> Deref for AssetService<SDK> {
+impl<SDK: ServiceSDK, TQS: TransferQuotaInterface> Deref for AssetService<SDK, TQS> {
     type Target = SDK;
 
     fn deref(&self) -> &Self::Target {
@@ -143,13 +154,13 @@ impl<SDK: ServiceSDK> Deref for AssetService<SDK> {
     }
 }
 
-impl<SDK: ServiceSDK> DerefMut for AssetService<SDK> {
+impl<SDK: ServiceSDK, TQS: TransferQuotaInterface> DerefMut for AssetService<SDK, TQS> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.sdk
     }
 }
 
-impl<SDK: ServiceSDK> AssetInterface for AssetService<SDK> {
+impl<SDK: ServiceSDK, TQS: TransferQuotaInterface> AssetInterface for AssetService<SDK, TQS> {
     fn native_asset(&self, ctx: &ServiceContext) -> Result<Asset, ServiceResponse<()>> {
         impl_assets!(self, get_native_asset, ctx)
     }
@@ -186,6 +197,14 @@ impl<SDK: ServiceSDK> AssetInterface for AssetService<SDK> {
         impl_assets!(self, hook_transfer_from, ctx, payload)
     }
 
+    fn get_asset_(
+        &self,
+        ctx: &ServiceContext,
+        payload: GetAssetPayload,
+    ) -> Result<Asset, ServiceResponse<()>> {
+        impl_assets!(self, get_asset, ctx, payload)
+    }
+
     fn approve_(
         &mut self,
         ctx: &ServiceContext,
@@ -212,11 +231,15 @@ impl<SDK: ServiceSDK> AssetInterface for AssetService<SDK> {
 }
 
 #[service]
-impl<SDK: ServiceSDK> AssetService<SDK> {
-    pub fn new(mut sdk: SDK) -> Self {
+impl<SDK: ServiceSDK, TQS: TransferQuotaInterface> AssetService<SDK, TQS> {
+    pub fn new(mut sdk: SDK, transfer_quota_service: Option<TQS>) -> Self {
         let assets: Box<dyn StoreMap<Hash, Asset>> = sdk.alloc_or_recover_map("assets");
 
-        Self { sdk, assets }
+        Self {
+            sdk,
+            transfer_quota_service,
+            assets,
+        }
     }
 
     #[genesis]
@@ -339,10 +362,10 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
         }
 
         let asset = Asset {
-            id:        asset_id,
+            id:        asset_id.clone(),
             name:      payload.name,
             symbol:    payload.symbol,
-            admin:     payload.admin,
+            admin:     payload.admin.clone(),
             supply:    payload.supply,
             precision: payload.precision,
             relayable: payload.relayable,
@@ -355,6 +378,27 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
                 asset.id.clone(),
                 AssetBalance::new(mint.balance),
             )
+        }
+
+        if let Some(transfer_quota_service) = self.transfer_quota_service.as_mut() {
+            if transfer_quota_service
+                .create_asset_config_(
+                    ServiceContext::with_context(
+                        &ctx,
+                        Some(TRANSFER_QUOTA_TOKEN.clone()),
+                        ctx.get_service_name().to_string(),
+                        ctx.get_service_method().to_string(),
+                        ctx.get_payload().to_string(),
+                    ),
+                    CreateAssetConfigPayload {
+                        asset_id,
+                        admin: payload.admin,
+                    },
+                )
+                .is_err()
+            {
+                return ServiceError::CreateTransferQuota.into();
+            };
         }
 
         Self::emit_event(&ctx, "CreateAsset".to_owned(), &asset);
@@ -371,6 +415,19 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
             Ok(s) => s,
             Err(err) => return err.into(),
         };
+
+        if let Some(transfer_quota_service) = self.transfer_quota_service.as_mut() {
+            if transfer_quota_service
+                .quota_transfer_(ctx.clone(), QuotaTransferPayload {
+                    asset_id: payload.asset_id.clone(),
+                    address:  ctx.get_caller(),
+                    amount:   payload.value,
+                })
+                .is_err()
+            {
+                return ServiceError::TransferQuota.into();
+            };
+        }
 
         let asset_id = payload.asset_id;
         if let Err(err) = self._transfer(&sender, &payload.to, asset_id.clone(), payload.value) {
@@ -421,6 +478,20 @@ impl<SDK: ServiceSDK> AssetService<SDK> {
 
         sender_balance.update_allowance(caller.clone(), checked_allowance);
         self.set_account_value(&payload.sender, asset_id.to_owned(), sender_balance);
+
+        // check quota
+        if let Some(transfer_quota_service) = self.transfer_quota_service.as_mut() {
+            if transfer_quota_service
+                .quota_transfer_(ctx.clone(), QuotaTransferPayload {
+                    asset_id: payload.asset_id.clone(),
+                    address:  payload.sender.clone(),
+                    amount:   payload.value,
+                })
+                .is_err()
+            {
+                return ServiceError::TransferQuota.into();
+            };
+        }
 
         if let Err(err) = self._transfer(
             &payload.sender,
@@ -722,6 +793,12 @@ pub enum ServiceError {
 
     #[display(fmt = "Memo is too long")]
     TooLongMemo,
+
+    #[display(fmt = "Can not create related transfer quota config")]
+    CreateTransferQuota,
+
+    #[display(fmt = "Transfer quota service response failure")]
+    TransferQuota,
 }
 
 impl ServiceError {
@@ -742,6 +819,8 @@ impl ServiceError {
             ServiceError::MeaningLessValue(_) => 113,
             ServiceError::MintNotEqualSupply => 114,
             ServiceError::TooLongMemo => 115,
+            ServiceError::CreateTransferQuota => 116,
+            ServiceError::TransferQuota => 117,
         }
     }
 }

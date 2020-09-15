@@ -1,5 +1,3 @@
-mod asset_without_transfer_quota;
-
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
@@ -20,7 +18,6 @@ use crate::types::{
 use crate::{AssetService, ServiceError};
 use kyc::KycService;
 use timestamp::TimestampService;
-use transfer_quota::types::GetAssetConfigPayload;
 use transfer_quota::TransferQuotaService;
 
 macro_rules! service_call {
@@ -80,19 +77,12 @@ fn test_create_asset() {
     });
     assert_eq!(asset_got, asset);
 
-    let resp = service_call!(service, get_balance, ctx.clone(), GetBalancePayload {
+    let resp = service_call!(service, get_balance, ctx, GetBalancePayload {
         asset_id: asset.id.clone(),
         user:     caller,
     });
     assert_eq!(resp.balance, supply);
     assert_eq!(resp.asset_id, asset.id);
-
-    let res = service
-        .1
-        .get_asset_config(ctx, GetAssetConfigPayload { asset_id: asset.id });
-    assert_eq!(res.code, 0);
-    assert_eq!(res.succeed_data.admin, ADMIN_ACCOUNT.clone());
-    assert_eq!(res.succeed_data.activated, false);
 }
 
 #[test]
@@ -701,7 +691,6 @@ struct TestService(
         TestSDK,
         TransferQuotaService<TestSDK, KycService<TestSDK>, TimestampService<TestSDK>>,
     >,
-    TransferQuotaService<TestSDK, KycService<TestSDK>, TimestampService<TestSDK>>,
 );
 
 impl Deref for TestService {
@@ -734,46 +723,14 @@ impl TestService {
         let state = GeneralServiceState::new(trie);
         let state = Rc::new(RefCell::new(state));
 
-        let timestamp_service = TimestampService::new(DefaultServiceSDK::new(
-            Rc::clone(&state),
-            Rc::clone(&chain_db),
-        ));
-
-        let kyc_service = KycService::new(DefaultServiceSDK::new(
-            Rc::clone(&state),
-            Rc::clone(&chain_db),
-        ));
-
-        let transfer_quota_service = TransferQuotaService::new(
-            DefaultServiceSDK::new(Rc::clone(&state), Rc::clone(&chain_db)),
-            kyc_service,
-            timestamp_service,
-        );
-
         let mut asset_service = AssetService::new(
             DefaultServiceSDK::new(Rc::clone(&state), Rc::clone(&chain_db)),
-            Some(transfer_quota_service),
+            None,
         );
 
         asset_service.init_genesis(TestService::genesis());
 
-        let timestamp_service = TimestampService::new(DefaultServiceSDK::new(
-            Rc::clone(&state),
-            Rc::clone(&chain_db),
-        ));
-
-        let kyc_service = KycService::new(DefaultServiceSDK::new(
-            Rc::clone(&state),
-            Rc::clone(&chain_db),
-        ));
-
-        let transfer_quota_service = TransferQuotaService::new(
-            DefaultServiceSDK::new(Rc::clone(&state), Rc::clone(&chain_db)),
-            kyc_service,
-            timestamp_service,
-        );
-
-        TestService(asset_service, transfer_quota_service)
+        TestService(asset_service)
     }
 
     fn genesis() -> InitGenesisPayload {

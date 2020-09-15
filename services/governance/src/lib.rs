@@ -90,8 +90,8 @@ pub struct GovernanceService<A, M, SDK> {
     profits: Box<dyn StoreMap<Address, u64>>,
     miners:  Box<dyn StoreMap<Address, Address>>,
 
-    asset:    A,
-    metadata: M,
+    pub asset:    A,
+    pub metadata: M,
 }
 
 impl<A, M, SDK> GovernanceInterface for GovernanceService<A, M, SDK>
