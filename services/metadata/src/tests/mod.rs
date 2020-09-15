@@ -7,7 +7,7 @@ use cita_trie::MemoryDB;
 
 use framework::binding::sdk::{DefaultChainQuerier, DefaultServiceSDK};
 use framework::binding::state::{GeneralServiceState, MPTTrie};
-use protocol::traits::{Context, ServiceResponse, ServiceSDK, Storage};
+use protocol::traits::{CommonStorage, Context, ServiceResponse, ServiceSDK, Storage};
 use protocol::types::{
     Address, Block, Hash, Hex, Metadata, Proof, Receipt, ServiceContext, ServiceContextParams,
     SignedTransaction, ValidatorExtend, METADATA_KEY,
@@ -195,14 +195,6 @@ impl Storage for MockStorage {
         unimplemented!()
     }
 
-    async fn insert_block(&self, _: Context, _: Block) -> ProtocolResult<()> {
-        unimplemented!()
-    }
-
-    async fn get_block(&self, _: Context, _: u64) -> ProtocolResult<Option<Block>> {
-        unimplemented!()
-    }
-
     async fn insert_receipts(&self, _: Context, _: u64, _: Vec<Receipt>) -> ProtocolResult<()> {
         unimplemented!()
     }
@@ -227,16 +219,31 @@ impl Storage for MockStorage {
     async fn get_latest_proof(&self, _: Context) -> ProtocolResult<Proof> {
         unimplemented!()
     }
+}
+
+#[async_trait]
+impl CommonStorage for MockStorage {
+    async fn insert_block(&self, _: Context, _: Block) -> ProtocolResult<()> {
+        unimplemented!()
+    }
+
+    async fn get_block(&self, _: Context, _: u64) -> ProtocolResult<Option<Block>> {
+        unimplemented!()
+    }
+
+    async fn set_block(&self, _ctx: Context, _block: Block) -> ProtocolResult<()> {
+        unimplemented!()
+    }
+
+    async fn remove_block(&self, _ctx: Context, _height: u64) -> ProtocolResult<()> {
+        unimplemented!()
+    }
 
     async fn get_latest_block(&self, _: Context) -> ProtocolResult<Block> {
         unimplemented!()
     }
 
-    async fn update_overlord_wal(&self, _: Context, _: Bytes) -> ProtocolResult<()> {
-        unimplemented!()
-    }
-
-    async fn load_overlord_wal(&self, _: Context) -> ProtocolResult<Bytes> {
+    async fn set_latest_block(&self, _ctx: Context, _block: Block) -> ProtocolResult<()> {
         unimplemented!()
     }
 }

@@ -14,13 +14,13 @@ rlp = "0.4"
 muta-codec-derive = "0.2"
 hex = "0.4"
 
-muta = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
-protocol = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
+muta = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
+protocol = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
 
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
 
-framework = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
-core-storage = { git = "https://github.com/nervosnetwork/muta", rev = "5e1e4b63"}
+framework = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}
+core-storage = { git = "https://github.com/nervosnetwork/muta", rev = "93c551e0"}

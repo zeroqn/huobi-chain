@@ -1,6 +1,5 @@
 use derive_more::{Display, From};
 
-use muta::MutaBuilder;
 use protocol::traits::{SDKFactory, Service, ServiceMapping, ServiceSDK};
 use protocol::{ProtocolError, ProtocolErrorKind, ProtocolResult};
 
@@ -166,35 +165,13 @@ impl DefaultServiceMapping {
 }
 
 fn main() {
-    let matches = clap::App::new("Huobi-chain")
-        .version("v0.5.0-rc.2")
-        .author("Muta Dev <muta@nervos.org>")
-        .arg(
-            clap::Arg::from_usage("-c --config=[FILE] 'a required file for the configuration'")
-                .default_value("./config/chain.toml"),
-        )
-        .arg(
-            clap::Arg::from_usage("-g --genesis=[FILE] 'a required file for the genesis'")
-                .default_value("./config/genesis.toml"),
-        )
-        .get_matches();
-
-    let config_path = matches.value_of("config").unwrap();
-    let genesis_path = matches.value_of("genesis").unwrap();
-
-    let builder = MutaBuilder::new();
-
-    // set configs
-    let builder = builder
-        .config_path(&config_path)
-        .genesis_path(&genesis_path);
-
-    // set service-mapping
-    let builer = builder.service_mapping(DefaultServiceMapping {});
-
-    let muta = builer.build().unwrap();
-
-    muta.run().unwrap()
+    muta::run(
+        DefaultServiceMapping {},
+        "Huobi-chain",
+        "v0.5.0-rc.2",
+        "Muta Dev <muta@nervos.org>",
+        None,
+    )
 }
 
 #[derive(Debug, Display, From)]
