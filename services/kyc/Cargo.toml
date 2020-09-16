@@ -14,13 +14,13 @@ rlp = "0.4"
 muta-codec-derive = "0.2"
 hex = "0.4"
 
-muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
-protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
 
-framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
-core-storage = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+framework = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }

@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
-protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 
 asset = { path = "../asset" }
 governance = { path = "../governance" }
@@ -19,7 +19,7 @@ serde_json = "1.0"
 
 [dev-dependencies]
 metadata = { path = "../metadata" }
-core-storage = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
-framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
+framework = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 cita_trie = "2.0"
 rand = "0.7"

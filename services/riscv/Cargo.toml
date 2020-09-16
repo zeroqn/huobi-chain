@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-muta = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste"}
-protocol = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+muta = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 
 admission_control = { path = "../admission_control"}
 asset = { path = "../asset" }
@@ -27,9 +27,7 @@ log = "0.4"
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
-core-storage = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
 metadata = { path = "../metadata" }
-framework = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
-core-storage = { git = "https://github.com/zeroqn/muta", branch = "perf-expirement-taste" }
+framework = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 env_logger = "0.7.1"
