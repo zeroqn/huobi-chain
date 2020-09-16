@@ -321,15 +321,15 @@ name = "admission_control"
 version = "0.5.0"
 dependencies = [
  "asset 0.5.0",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "governance",
  "metadata 0.5.0",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
+ "muta-protocol",
  "rand 0.7.3",
  "serde",
  "serde_json",
@@ -403,30 +403,14 @@ dependencies = [
 [[package]]
 name = "asset"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "byteorder",
- "bytes 0.5.6",
- "derive_more 0.99.10",
- "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "rlp 0.4.5",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "asset"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "derive_more 0.99.10",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -437,18 +421,18 @@ name = "asset"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.15.0",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "kyc",
  "lazy_static",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -494,14 +478,14 @@ name = "authorization"
 version = "0.5.0"
 dependencies = [
  "admission_control",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "multi-signature",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
+ "muta-protocol",
  "rand 0.7.3",
  "serde",
  "serde_json",
@@ -615,23 +599,10 @@ dependencies = [
 [[package]]
 name = "binding-macro"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "derive_more 0.15.0",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "proc-macro2 1.0.21",
- "quote 1.0.7",
- "serde_json",
- "syn 1.0.41",
-]
-
-[[package]]
-name = "binding-macro"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "derive_more 0.15.0",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "proc-macro2 1.0.21",
  "quote 1.0.7",
  "serde_json",
@@ -768,72 +739,32 @@ dependencies = [
 [[package]]
 name = "byzantine"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "actix-rt",
- "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "bytes 0.5.6",
- "clap",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-config-parser 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-logger 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-merkle 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-api 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-consensus 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "lazy_static",
- "log",
- "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "overlord",
- "parking_lot 0.11.0",
- "rand 0.7.3",
- "rlp 0.4.5",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 0.2.22",
- "toml 0.5.6",
-]
-
-[[package]]
-name = "byzantine"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "actix-rt",
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "bytes 0.5.6",
  "clap",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-config-parser 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-logger 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-merkle 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-api 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-consensus 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-config-parser",
+ "common-crypto",
+ "common-logger",
+ "common-merkle",
+ "core-api",
+ "core-consensus",
+ "core-mempool",
+ "core-network",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "futures 0.3.5",
  "futures-timer 3.0.2",
  "hex",
  "lazy_static",
  "log",
  "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "overlord",
  "parking_lot 0.11.0",
  "rand 0.7.3",
@@ -943,76 +874,36 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "actix-rt",
- "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "cita_trie",
- "clap",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-config-parser 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-logger 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-api 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-consensus 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "fs_extra",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "log",
- "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "rlp 0.4.5",
- "run 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 0.2.22",
- "toml 0.5.6",
-]
-
-[[package]]
-name = "cli"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "actix-rt",
  "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "byzantine",
  "cita_trie",
  "clap",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-config-parser 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-logger 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-api 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-consensus 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-config-parser",
+ "common-crypto",
+ "common-logger",
+ "core-api",
+ "core-consensus",
+ "core-mempool",
+ "core-network",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "fs_extra",
  "futures 0.3.5",
  "futures-timer 3.0.2",
  "hex",
  "log",
  "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "rlp 0.4.5",
- "run 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "run",
  "serde",
  "serde_derive",
  "serde_json",
@@ -1041,25 +932,12 @@ dependencies = [
 [[package]]
 name = "common-apm"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "derive_more 0.99.10",
- "lazy_static",
- "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "prometheus",
- "prometheus-static-metric",
-]
-
-[[package]]
-name = "common-apm"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "derive_more 0.99.10",
  "lazy_static",
  "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "prometheus",
  "prometheus-static-metric",
 ]
@@ -1067,26 +945,11 @@ dependencies = [
 [[package]]
 name = "common-config-parser"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "core-consensus 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "reqwest",
- "serde",
- "serde_derive",
- "stringreader",
- "toml 0.4.10",
-]
-
-[[package]]
-name = "common-config-parser"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "core-consensus 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-consensus",
+ "core-mempool",
+ "muta-protocol",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1097,37 +960,11 @@ dependencies = [
 [[package]]
 name = "common-crypto"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "ophelia",
- "ophelia-bls-amcl",
- "ophelia-secp256k1",
-]
-
-[[package]]
-name = "common-crypto"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "ophelia",
  "ophelia-bls-amcl",
  "ophelia-secp256k1",
-]
-
-[[package]]
-name = "common-logger"
-version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "chrono",
- "creep",
- "env_logger",
- "json",
- "log",
- "log4rs",
- "rustracing_jaeger 0.5.0",
- "serde",
- "serde_derive",
 ]
 
 [[package]]
@@ -1149,19 +986,9 @@ dependencies = [
 [[package]]
 name = "common-merkle"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "rayon",
- "static_merkle_tree",
-]
-
-[[package]]
-name = "common-merkle"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rayon",
  "static_merkle_tree",
 ]
@@ -1223,41 +1050,14 @@ checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 [[package]]
 name = "core-api"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "actix-web",
- "async-trait",
- "bytes 0.5.6",
- "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.15.0",
- "futures 0.3.5",
- "hex",
- "juniper",
- "juniper_codegen 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static",
- "log",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "num_cpus",
- "openssl",
- "pprof",
- "serde_json",
- "tokio 0.2.22",
- "url 2.1.1",
-]
-
-[[package]]
-name = "core-api"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "actix-web",
  "async-trait",
  "bytes 0.5.6",
  "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-crypto",
  "derive_more 0.15.0",
  "futures 0.3.5",
  "hex",
@@ -1265,7 +1065,7 @@ dependencies = [
  "juniper_codegen 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static",
  "log",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "num_cpus",
  "openssl",
  "pprof",
@@ -1277,53 +1077,19 @@ dependencies = [
 [[package]]
 name = "core-consensus"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "async-trait",
- "bincode",
- "bytes 0.5.6",
- "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-logger 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-merkle 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "creep",
- "derive_more 0.99.10",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "json",
- "lazy_static",
- "log",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "overlord",
- "parking_lot 0.11.0",
- "prost",
- "rlp 0.4.5",
- "serde",
- "serde_json",
- "tokio 0.2.22",
-]
-
-[[package]]
-name = "core-consensus"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "async-trait",
  "bincode",
  "bytes 0.5.6",
  "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-logger 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-merkle 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-crypto",
+ "common-logger",
+ "common-merkle",
+ "core-mempool",
+ "core-network",
+ "core-storage",
  "creep",
  "derive_more 0.99.10",
  "futures 0.3.5",
@@ -1332,7 +1098,7 @@ dependencies = [
  "json",
  "lazy_static",
  "log",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "overlord",
  "parking_lot 0.11.0",
  "prost",
@@ -1361,41 +1127,14 @@ checksum = "b3a71ab494c0b5b860bdc8407ae08978052417070c2ced38573a9157ad75b8ac"
 [[package]]
 name = "core-mempool"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "async-trait",
- "bytes 0.5.6",
- "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "crossbeam-queue",
- "derive_more 0.99.10",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "log",
- "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "num-traits",
- "rand 0.7.3",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 0.2.22",
-]
-
-[[package]]
-name = "core-mempool"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "async-trait",
  "bytes 0.5.6",
  "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-crypto",
+ "core-network",
  "crossbeam-queue",
  "derive_more 0.99.10",
  "futures 0.3.5",
@@ -1403,43 +1142,13 @@ dependencies = [
  "hex",
  "log",
  "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "num-traits",
  "rand 0.7.3",
  "serde",
  "serde_derive",
  "serde_json",
  "tokio 0.2.22",
-]
-
-[[package]]
-name = "core-network"
-version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "arc-swap",
- "async-trait",
- "bincode",
- "bs58",
- "bytes 0.5.6",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "futures 0.3.5",
- "futures-timer 2.0.2",
- "hex",
- "hostname",
- "lazy_static",
- "log",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "prost",
- "rand 0.7.3",
- "serde",
- "serde_derive",
- "snap",
- "tentacle",
- "tokio 0.2.22",
- "tokio-util 0.2.0",
 ]
 
 [[package]]
@@ -1452,7 +1161,7 @@ dependencies = [
  "bincode",
  "bs58",
  "bytes 0.5.6",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
  "derive_more 0.99.10",
  "futures 0.3.5",
  "futures-timer 2.0.2",
@@ -1460,7 +1169,7 @@ dependencies = [
  "hostname",
  "lazy_static",
  "log",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "prost",
  "rand 0.7.3",
@@ -1475,31 +1184,15 @@ dependencies = [
 [[package]]
 name = "core-storage"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "async-trait",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.15.0",
- "futures 0.3.5",
- "lazy_static",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "rocksdb",
- "tokio 0.2.22",
-]
-
-[[package]]
-name = "core-storage"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "arc-swap",
  "async-trait",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
  "derive_more 0.15.0",
  "futures 0.3.5",
  "lazy_static",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "rocksdb",
  "tokio 0.2.22",
@@ -1832,43 +1525,13 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 [[package]]
 name = "framework"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "asset 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "byteorder",
- "bytes 0.5.6",
- "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "futures 0.3.5",
- "hasher",
- "hex",
- "json",
- "lazy_static",
- "log",
- "lru",
- "lru-cache",
- "metadata 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "rand 0.7.3",
- "rayon",
- "rlp 0.4.5",
- "rocksdb",
- "serde_json",
- "util 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
-]
-
-[[package]]
-name = "framework"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "asset 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "asset 0.2.0",
  "byteorder",
  "bytes 0.5.6",
  "cita_trie",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
  "derive_more 0.99.10",
  "futures 0.3.5",
  "hasher",
@@ -1878,15 +1541,15 @@ dependencies = [
  "log",
  "lru",
  "lru-cache",
- "metadata 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "metadata 0.2.0",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "rand 0.7.3",
  "rayon",
  "rlp 0.4.5",
  "rocksdb",
  "serde_json",
- "util 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "util",
 ]
 
 [[package]]
@@ -2099,18 +1762,18 @@ version = "0.5.0"
 dependencies = [
  "asset 0.5.0",
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "cita_trie",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "hex",
  "lazy_static",
  "metadata 0.5.0",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -2290,16 +1953,16 @@ dependencies = [
  "cita_trie",
  "clap",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "governance",
  "hex",
  "kyc",
  "lazy_static",
  "metadata 0.5.0",
  "multi-signature",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "riscv",
  "rlp 0.4.5",
  "serde",
@@ -2531,15 +2194,15 @@ name = "kyc"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "hex",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -2738,28 +2401,13 @@ dependencies = [
 [[package]]
 name = "metadata"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "byteorder",
- "bytes 0.5.6",
- "derive_more 0.99.10",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "rlp 0.4.5",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "metadata"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "derive_more 0.99.10",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -2770,14 +2418,14 @@ name = "metadata"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "cita_trie",
  "derive_more 0.15.0",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
+ "muta",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -2882,15 +2530,15 @@ name = "multi-signature"
 version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-crypto",
  "derive_more 0.99.10",
  "hasher",
  "hex",
  "lazy_static",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rand 0.7.3",
  "rlp 0.4.5",
  "serde",
@@ -2906,74 +2554,34 @@ checksum = "1255076139a83bb467426e7f8d0134968a8118844faa755985e077cf31850333"
 [[package]]
 name = "muta"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "actix-rt",
- "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "cita_trie",
- "clap",
- "cli 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-config-parser 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-logger 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-api 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-consensus 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "fs_extra",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "log",
- "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "rlp 0.4.5",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 0.2.22",
- "toml 0.5.6",
-]
-
-[[package]]
-name = "muta"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "actix-rt",
  "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "byzantine",
  "cita_trie",
  "clap",
- "cli 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-config-parser 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-logger 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-api 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-consensus 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "cli",
+ "common-apm",
+ "common-config-parser",
+ "common-crypto",
+ "common-logger",
+ "core-api",
+ "core-consensus",
+ "core-mempool",
+ "core-network",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "fs_extra",
  "futures 0.3.5",
  "futures-timer 3.0.2",
  "hex",
  "log",
  "muta-apm",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "rlp 0.4.5",
  "serde",
@@ -3020,34 +2628,6 @@ dependencies = [
  "proc-macro2 1.0.21",
  "quote 1.0.7",
  "syn 1.0.41",
-]
-
-[[package]]
-name = "muta-protocol"
-version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "arc-swap",
- "async-trait",
- "bech32",
- "bincode",
- "byteorder",
- "bytes 0.5.6",
- "cita_trie",
- "creep",
- "derive_more 0.99.10",
- "futures 0.3.5",
- "hasher",
- "hex",
- "json",
- "lazy_static",
- "muta-codec-derive",
- "ophelia",
- "ophelia-secp256k1",
- "prost",
- "rlp 0.4.5",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -4031,21 +3611,21 @@ dependencies = [
  "admission_control",
  "asset 0.5.0",
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "cita_trie",
  "ckb-vm",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.99.10",
  "env_logger",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "governance",
  "hex",
  "kyc",
  "log",
  "metadata 0.5.0",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -4084,68 +3664,31 @@ dependencies = [
 [[package]]
 name = "run"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "actix-rt",
- "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "cita_trie",
- "clap",
- "common-apm 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-config-parser 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "common-logger 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-api 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-consensus 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-mempool 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-network 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "futures 0.3.5",
- "futures-timer 3.0.2",
- "hex",
- "log",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "parking_lot 0.11.0",
- "rlp 0.4.5",
- "serde",
- "serde_derive",
- "serde_json",
- "tokio 0.2.22",
- "toml 0.5.6",
-]
-
-[[package]]
-name = "run"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
  "actix-rt",
  "backtrace",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "bytes 0.5.6",
- "byzantine 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "byzantine",
  "cita_trie",
  "clap",
- "common-apm 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-config-parser 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "common-logger 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-api 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-consensus 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-mempool 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-network 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-apm",
+ "common-config-parser",
+ "common-crypto",
+ "common-logger",
+ "core-api",
+ "core-consensus",
+ "core-mempool",
+ "core-network",
+ "core-storage",
  "derive_more 0.99.10",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "futures 0.3.5",
  "futures-timer 3.0.2",
  "hex",
  "log",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "parking_lot 0.11.0",
  "rlp 0.4.5",
  "serde",
@@ -4826,19 +4369,19 @@ name = "timestamp"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
+ "binding-macro",
  "bytes 0.5.6",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
+ "core-storage",
  "derive_more 0.99.10",
  "env_logger",
- "framework 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
+ "framework",
  "hex",
  "lazy_static",
  "log",
- "muta 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -5144,19 +4687,19 @@ name = "transfer_quota"
 version = "0.5.0"
 dependencies = [
  "async-trait",
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
  "chrono",
  "cita_trie",
- "core-storage 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "core-storage",
  "derive_more 0.15.0",
- "framework 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "framework",
  "kyc",
  "lazy_static",
- "muta 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta",
  "muta-codec-derive",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rlp 0.4.5",
  "serde",
  "serde_json",
@@ -5341,35 +4884,16 @@ dependencies = [
 [[package]]
 name = "util"
 version = "0.2.0"
-source = "git+https://github.com/nervosnetwork/muta?tag=v0.2.0#eca7cded683349367b0896b678e3cfb07433fb25"
-dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "byteorder",
- "bytes 0.5.6",
- "common-crypto 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "derive_more 0.15.0",
- "hasher",
- "hex",
- "muta-protocol 0.2.0 (git+https://github.com/nervosnetwork/muta?tag=v0.2.0)",
- "rand 0.7.3",
- "rlp 0.4.5",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "util"
-version = "0.2.0"
 source = "git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session#465b60c21b826214bdb046e3c646c92b38f022ec"
 dependencies = [
- "binding-macro 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "binding-macro",
  "byteorder",
  "bytes 0.5.6",
- "common-crypto 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "common-crypto",
  "derive_more 0.15.0",
  "hasher",
  "hex",
- "muta-protocol 0.2.0 (git+https://github.com/zeroqn/muta?branch=fix-network-unidentified-session)",
+ "muta-protocol",
  "rand 0.7.3",
  "rlp 0.4.5",
  "serde",
