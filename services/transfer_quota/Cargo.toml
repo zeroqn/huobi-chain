@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-muta = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
-protocol = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0", package = "muta-protocol" }
-binding-macro = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+muta = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+protocol = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session", package = "muta-protocol" }
+binding-macro = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 muta-codec-derive = "0.2"
 kyc = {path = "../kyc"}
 timestamp = {path="../timestamp"}
@@ -25,6 +25,6 @@ chrono = "0.4"
 [dev-dependencies]
 cita_trie = "2.0"
 async-trait = "0.1"
-framework = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
-core-storage = { git = "https://github.com/nervosnetwork/muta", tag = "v0.2.0"}
+framework = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session"}
+core-storage = { git = "https://github.com/zeroqn/muta", branch = "fix-network-unidentified-session" }
 lazy_static = "1.4"
